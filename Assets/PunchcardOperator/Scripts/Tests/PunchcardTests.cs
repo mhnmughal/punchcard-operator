@@ -277,6 +277,38 @@ namespace PunchcardOperator.Tests
         }
     }
 
+    public class SafeAreaTests
+    {
+        [Test]
+        public void FullScreenSafeArea_MapsToFullAnchors()
+        {
+            var ok = SafeAreaPanel.TryComputeAnchors(new Rect(0, 0, 2340, 1080), 2340, 1080, out var min, out var max);
+            Assert.IsTrue(ok);
+            Assert.AreEqual(Vector2.zero, min);
+            Assert.AreEqual(Vector2.one, max);
+        }
+
+        [Test]
+        public void NotchInset_ProducesInsetAnchors()
+        {
+            // 132px cut on the left (landscape notch), 63px home indicator on the right
+            var ok = SafeAreaPanel.TryComputeAnchors(new Rect(132, 0, 2340 - 132 - 63, 1080), 2340, 1080, out var min, out var max);
+            Assert.IsTrue(ok);
+            Assert.AreEqual(132f / 2340f, min.x, 1e-4);
+            Assert.AreEqual((2340f - 63f) / 2340f, max.x, 1e-4);
+            Assert.AreEqual(0f, min.y);
+            Assert.AreEqual(1f, max.y);
+        }
+
+        [Test]
+        public void DegenerateInput_IsRejected()
+        {
+            Assert.IsFalse(SafeAreaPanel.TryComputeAnchors(new Rect(0, 0, 100, 100), 0, 0, out _, out _));
+            Assert.IsFalse(SafeAreaPanel.TryComputeAnchors(new Rect(-5, 0, 100, 100), 100, 100, out _, out _));
+            Assert.IsFalse(SafeAreaPanel.TryComputeAnchors(new Rect(0, 0, 10, 10), 100, 100, out _, out _)); // implausible 90% inset
+        }
+    }
+
     public class CampaignValidationTests
     {
         [Test]
