@@ -7,12 +7,12 @@ _Last updated: 2026-09-06_
 | Suite | Result |
 |-------|--------|
 | EditMode (`PunchcardOperator.Tests`) | **29 / 29 PASS** |
-| PlayMode (`PunchcardOperator.PlayTests`) | **16 / 16 PASS** |
+| PlayMode (`PunchcardOperator.PlayTests`) | **19 / 19 PASS** |
 | Level validation (`LevelValidator.Validate`) | **13 / 13 VALID** |
 | Compile | 0 errors, 0 warnings |
 | Editor console during Play | clean |
 
-### PlayMode tests (16)
+### PlayMode tests (19)
 
 | Test | Covers |
 |------|--------|

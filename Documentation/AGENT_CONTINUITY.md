@@ -14,7 +14,7 @@ No obsolete 42-level content anywhere (green-field build).
 |------|-------|
 | Core architecture | `PunchCardSimulator`, `CardEditSession`, `PunchCardLevelDefinition`/`LevelDatabase`, `SaveSystem`/`ProgressionManager`, `LevelValidator` — stable |
 | Levels | all 13 authored in `PunchcardLevelBuilder` (menu: *Punchcard Operator/Rebuild All Levels*); `LevelValidator` → **13/13 VALID** |
-| Tests | EditMode **29/29**, PlayMode **16/16** — every commit |
+| Tests | EditMode **29/29**, PlayMode **19/19** — every commit |
 | Scenes | `Boot` → `Menu` → `Game` (build order). Boot = power-on + first-launch routing. |
 | UI/UX | boot sequence, persistent fades, menu cross-fades, `ButtonFX` press feel, pause menu (+ Escape + app-focus auto-pause), Operations Manual (rules), Credits, cassette Card Vault, machine-console Game screen (bolts, card reader, PWR/RDR/RUN lamps, animated punch head), System Certified finale |
 | Audio | `Sfx` — synthesised, pooled, pitch-drifted, layered. No external files. |
@@ -65,6 +65,6 @@ No obsolete 42-level content anywhere (green-field build).
 
 ## Last verification (2026-09-06)
 
-`13 / 13 VALID` · EditMode `29 / 29` · PlayMode `16 / 16` · Android APK Success
+`13 / 13 VALID` · EditMode `29 / 29` · PlayMode `19 / 19` · Android APK Success
 (permission-free) · iOS Xcode project Success (audited) · Windows Success
 (launches clean) · Editor console clean.

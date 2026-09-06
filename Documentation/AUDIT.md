@@ -9,7 +9,7 @@ check not performed in this environment.
 
 | Item | Status | Evidence |
 |------|--------|----------|
-| Core Gameplay | PASS | 29 EditMode + 16 PlayMode tests |
+| Core Gameplay | PASS | 29 EditMode + 19 PlayMode tests |
 | Punch Card Simulator | PASS | 12 simulator tests (move / turn / wall / off-board / no-target / Repeat / no-prev-Repeat / Flip / dual-channel / per-channel Repeat) |
 | Card Editing | PASS | `CardEditSession` tests + every stage solved through the real UI |
 | Load / Execute Flow | PASS | per-stage literal-click test pulls Load then Execute for all 13 |
@@ -57,14 +57,14 @@ check not performed in this environment.
 | MCP Production Cleanup | PASS (documented) | editor-only; absent from both IL2CPP build outputs; left in manifest per owner instruction; one-line removal for a release checkout |
 | Mobile Player Settings | PASS | landscape (both), `com.operatorworks.punchcardoperator` (placeholder, documented), IL2CPP + ARM64, Android minSdk 24 / no internet permission, iOS 13, Medium stripping + `link.xml`, 60 fps target, never-sleep |
 | Performance | PASS | `PerformanceProbeTests` — no measurable per-frame GC allocation over the editor baseline; Medium stripping trims ~17 MB of managed code |
-| Automated Tests | PASS | EditMode **29 / 29**, PlayMode **16 / 16** |
+| Automated Tests | PASS | EditMode **29 / 29**, PlayMode **19 / 19** |
 | Console | PASS | clean recompile from a cleared cache → **0 errors, 0 warnings**; build logs carry only third-party URP shader warnings, documented |
 
 ## Builds
 
 | Target | Status | Evidence |
 |--------|--------|----------|
-| Android APK | PASS | `Build/Android/PunchcardOperator.apk` — IL2CPP ARM64 release, ~31 MB, `Build Result: Success`, aapt2-verified permission-free |
+| Android APK | PASS | `Build/Android/PunchcardOperator.apk` — IL2CPP ARM64 release, ~30 MB, `Build Result: Success`, aapt2-verified permission-free |
 | Windows standalone | PASS | `Build/Windows` — Success, launches through Boot → route with zero exceptions in `player.log` (also validates the level DB / save deserialization path in a stripped build) |
 | iOS Xcode project | PASS (project) / NOT VERIFIED (`.ipa`) | `Build/iOS` — full Xcode project, `Build Result: Success`. Audited: no permission usage descriptions, no ATS override, no background modes, no push, no GameKit / Network framework, AVKit removed, `ITSAppUsesNonExemptEncryption = false`, both landscape. Compiling to an installable `.ipa` needs Xcode on macOS. |
 | Physical Device Test | NOT VERIFIED | descoped by the project owner |
@@ -85,7 +85,7 @@ check not performed in this environment.
 ## Final numbers
 
 - Level validation: **13 / 13 VALID**
-- Automated tests: **29 / 29 EditMode · 16 / 16 PlayMode**
+- Automated tests: **29 / 29 EditMode · 19 / 19 PlayMode**
 - Manual QA: **13 / 13 stages verified through the player-facing UI**
 - Builds: **Android APK — Success, offline-verified · Windows — Success, launches clean · iOS Xcode project — Success, audited**
 - Editor console: **0 errors, 0 warnings**
