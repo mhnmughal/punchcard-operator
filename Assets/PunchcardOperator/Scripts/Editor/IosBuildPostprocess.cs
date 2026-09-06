@@ -1,6 +1,6 @@
-#if UNITY_IOS
 using UnityEditor;
-using UnityEditor.Callbacks;
+using UnityEditor.Build;
+using UnityEditor.Build.Reporting;
 using UnityEditor.iOS.Xcode;
 using UnityEngine;
 
@@ -8,13 +8,17 @@ namespace PunchcardOperator.EditorTools
 {
     /// <summary>Trims the generated Xcode project for an offline game: declares
     /// export-compliance (no non-exempt encryption) so App Store Connect doesn't
-    /// prompt, and drops AVKit (video playback - the game has no video).</summary>
-    public static class IosBuildPostprocess
+    /// prompt, and drops AVKit (video playback - the game has no video).
+    /// Not wrapped in #if UNITY_IOS so it still runs when a build is kicked off
+    /// right after a platform switch, before editor scripts recompile.</summary>
+    public sealed class IosBuildPostprocess : IPostprocessBuildWithReport
     {
-        [PostProcessBuild(90)]
-        public static void OnPostprocessBuild(BuildTarget target, string path)
+        public int callbackOrder => 90;
+
+        public void OnPostprocessBuild(BuildReport report)
         {
-            if (target != BuildTarget.iOS) return;
+            if (report.summary.platform != BuildTarget.iOS) return;
+            string path = report.summary.outputPath;
 
             // Info.plist - export compliance
             string plistPath = System.IO.Path.Combine(path, "Info.plist");
@@ -38,4 +42,3 @@ namespace PunchcardOperator.EditorTools
         }
     }
 }
-#endif

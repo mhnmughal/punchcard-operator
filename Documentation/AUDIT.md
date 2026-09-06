@@ -43,7 +43,9 @@ check not performed in this environment.
 | Animations | PASS | carrier move / turn tweens, reader row highlight, punch-head drop + hole flash, finale stagger, boot cascade, machine disc |
 | Audio | PASS | 15 synthesised cues + 2 chords, 6-source pool, per-cue pitch drift, auto-layering (punch → chad, flip double-clack) |
 | Audio Provenance / Asset Provenance / Originality | PASS | 100 % synthesised audio, no imported art, OFL font only - `AUDIO_PROVENANCE.md`, `ASSET_PROVENANCE.md`, `ORIGINALITY.md` |
-| Game Icon | PASS | 4×-supersampled procedural punch card + amber punch press + chads, cut corner, inset keyline, vignette - all Android density buckets + iOS 1024 in the build |
+| Game Icon | PASS | 4×-supersampled procedural: bold gold punch card on a dark stage, a row of square slots with the active instruction lit amber, drop shadow + keyline; high contrast, reads small - all Android density buckets + iOS 1024 in the build |
+| UI Skin | PASS | procedural 9-slice sprite set (panel / button / inset with baked bevel, radial glow, vignette, rating pips, padlock, gear) in `Resources/UI/`; `ButtonFX` hover-scale + press-dip + glow; animated card-mote backdrop |
+| Tutorial | PASS | Operator Training cut to 5 steps, each matched to the next tap (PUNCH -> row -> LOAD -> EXECUTE -> watch); bright amber highlight frame tracks the target; verified end to end through the real UI |
 
 ## Systems
 
@@ -63,9 +65,9 @@ check not performed in this environment.
 
 | Target | Status | Evidence |
 |--------|--------|----------|
-| Android APK | PASS | `Build/Android/PunchcardOperator.apk` - IL2CPP ARM64 release, ~30 MB, `Build Result: Success`, aapt2-verified permission-free |
-| Windows standalone | PASS | `Build/Windows` - Success, launches through Boot → route with zero exceptions in `player.log` (also validates the level DB / save deserialization path in a stripped build) |
-| iOS Xcode project | PASS (project) / NOT VERIFIED (`.ipa`) | `Build/iOS` - full Xcode project, `Build Result: Success`. Audited: no permission usage descriptions, no ATS override, no background modes, no push, no GameKit / Network framework, AVKit removed, `ITSAppUsesNonExemptEncryption = false`, both landscape. Compiling to an installable `.ipa` needs Xcode on macOS. |
+| Android APK | PASS | `Build/Android/PunchcardOperator.apk` - IL2CPP ARM64 release, 29.6 MB, `Build Result: Success`; manifest scan: **zero permissions** (no INTERNET), only touchscreen / vulkan hardware features. Rebuilt on the polished UI. |
+| Windows standalone | PASS | `Build/Windows/PunchcardOperator.exe` - Success, 0 errors / 0 warnings, ~82 MB. Boot → route path exercised by the PlayMode suite in a stripped build. Rebuilt on the polished UI. |
+| iOS Xcode project | PASS (project) / NOT VERIFIED (`.ipa`) | `Build/iOS` - full Xcode project, `Build Result: Success`, rebuilt on the polished UI. Audited: no permission usage descriptions, no ATS override, no background modes, no push, **no GameKit framework, AVKit not linked** (removed from the Frameworks build phase by `IosBuildPostprocess`), `ITSAppUsesNonExemptEncryption = false`, both landscape. Post-processor rewritten as `IPostprocessBuildWithReport` (no `#if UNITY_IOS`) so it runs even on the first build after a platform switch. Compiling to an installable `.ipa` needs Xcode on macOS. |
 | Physical Device Test | NOT VERIFIED | descoped by the project owner |
 
 ## Residual items (environment-bound, not defects)
@@ -86,7 +88,7 @@ check not performed in this environment.
 - Level validation: **13 / 13 VALID**
 - Automated tests: **29 / 29 EditMode · 19 / 19 PlayMode**
 - Manual QA: **13 / 13 stages verified through the player-facing UI**
-- Builds: **Android APK - Success, offline-verified · Windows - Success, launches clean · iOS Xcode project - Success, audited**
+- Builds (all rebuilt on the polished UI): **Android APK - Success, zero permissions · Windows - Success, 0 warnings · iOS Xcode project - Success, export-compliance + no GameKit / AVKit link**
 - Editor console: **0 errors, 0 warnings**
 - Known release-blocking bugs: **NONE**
 
