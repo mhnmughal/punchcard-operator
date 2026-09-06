@@ -105,15 +105,14 @@ the simulator inside `LevelValidator` — current result **13 / 13 VALID**.
 ## Known limitations / debt
 
 - **UI is composed at runtime** under an authored SafeArea root (Theme builders),
-  not authored prefabs. Functional, safe-area aware, styled (frames, plates,
-  lamps, channel colour, industrial console). **No modelled 3D environment /
-  props** — the biggest gap vs. a "premium" bar.
+  not authored prefabs. Functional, safe-area aware, and now styled as a machine
+  console (bolted panels, recessed Automation Floor housing, CARD READER head,
+  PWR/RDR/RUN indicator lamps, animated punch head, lever knob, panel seams).
+  **Still 2D UI — not a modelled 3D environment** with camera + lighting.
 - Coach-light system is functional but coarse (keyword-driven ring placement,
   advances on the matching action, hard-gates only Execute-before-Punch).
 - SFX are synthesised (deliberate — zero licence risk); no music track.
-- Per-stage hands-on literal-input QA done for Level 0; stages 01–12 are verified
-  through the automated player-facing playthrough but not a manual tap-by-tap pass.
-- No on-device test (no hardware/emulator available).
+- No on-device test (no hardware/emulator available; descoped by the owner).
 
 See `AUDIT.md` for item-by-item status and `AGENT_CONTINUITY.md` for the
 remaining task list.

@@ -128,9 +128,9 @@ namespace PunchcardOperator.EditorTools
         private static void AssignIcon(Texture2D icon)
         {
             var tex = new[] { icon };
-            PlayerSettings.SetIconsForTargetGroup(BuildTargetGroup.Unknown, tex);      // default
-            PlayerSettings.SetIconsForTargetGroup(BuildTargetGroup.Android, tex);
-            PlayerSettings.SetIconsForTargetGroup(BuildTargetGroup.iOS, tex);
+            PlayerSettings.SetIcons(UnityEditor.Build.NamedBuildTarget.Unknown, tex, IconKind.Any);   // default
+            PlayerSettings.SetIcons(UnityEditor.Build.NamedBuildTarget.Android, tex, IconKind.Any);
+            PlayerSettings.SetIcons(UnityEditor.Build.NamedBuildTarget.iOS, tex, IconKind.Any);
         }
     }
 }

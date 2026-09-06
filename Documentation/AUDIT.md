@@ -38,8 +38,8 @@ check not performed.
 | Tool Dock | PASS | per-tool idle/selected/pressed, two-step selection, op picker, reject toasts |
 | Responsive UI | **PASS** | `ResponsiveLayoutTests` — Menu + Game at 20:9 / 19.5:9 / 16:9 / 4:3 / 1334×750: nothing off-screen, tap targets ≥ 30 px, bands never overlap, console clean |
 | Safe Area | PASS | `SafeAreaPanel` applies `Screen.safeArea`; `TryComputeAnchors` unit-tested (full-screen, landscape notch, degenerate). Physical notched-screen render: NOT VERIFIED |
-| Environment (authored 3D) | NOT VERIFIED | styled UI, not modelled machinery |
-| Animations | PASS (basic) | carrier move/turn tweens, reader row highlight, finale stagger |
+| Environment | PARTIAL | Game screen now reads as a machine console — recessed Automation Floor housing with bolts, a CARD READER head + slot, PWR/RDR/RUN indicator lamps that respond to state, raised bolted Tool Dock, panel seams. Still 2D/UI, not a modelled 3D environment with camera + lighting |
+| Animations | PASS (basic) | carrier move/turn tweens, reader row highlight, **animated punch head that drops onto the punched row + hole flash**, finale stagger |
 | Audio | PASS | 15 synthesised cues + 2 chords, 6-source pool, per-cue pitch drift, layering; wired to every major interaction |
 | Audio Provenance / Asset Provenance / Originality | PASS | `AUDIO_PROVENANCE.md` / `ASSET_PROVENANCE.md` / `ORIGINALITY.md` |
 
@@ -62,7 +62,7 @@ check not performed.
 | Mobile Player Settings | PASS (Android) · NOT VERIFIED (iOS) | landscape-only, `com.operatorworks.punchcardoperator` (placeholder), IL2CPP+ARM64, minSdk 24, no internet permission |
 | Performance | **PASS** | `PerformanceProbeTests` — the game adds no measurable per-frame GC allocation over the editor baseline (idle & execute deltas within the ~±15 KB noise band of a ~260 KB baseline; the earlier ~230 KB/frame regression class would fail this) |
 | Automated Tests | PASS | EditMode **29/29**, PlayMode **16/16** |
-| Console | PASS | Editor Console 0 errors / 0 warnings; build log has third-party URP/TMP shader warnings only (no project-code warnings), documented |
+| Console | PASS | clean recompile from a cleared build cache → **0 errors, 0 warnings** (the one project-code warning, an obsolete `SetIconsForTargetGroup`, is fixed); build log has third-party URP/TMP shader warnings only, documented as non-actionable |
 | Production Build/Export | PASS (Android) | `PunchcardOperator.apk`, IL2CPP ARM64 release, ~35 MB, `Build Result: Success` |
 | Build Smoke Test | PASS (desktop) | Windows standalone build launches, initialises engine + Input System, reaches the Control Room, no exceptions in `player.log` |
 | Physical Device Test | NOT VERIFIED (descoped) | no hardware/emulator available; project owner descoped it |
@@ -70,9 +70,11 @@ check not performed.
 
 ## Known open items
 
-1. **Authored 3D environment / props** for Control Room + Automation Floor — the
-   game is styled UI, not modelled machinery. Functionally complete; visual
-   depth is the remaining production item.
+1. **Modelled 3D environment** — the Game screen now reads as a machine console
+   (bolted housing, card reader, indicator lamps, animated punch head) and the
+   Control Room has a structured station layout, but both are 2D UI, not a
+   modelled scene with camera framing and lighting. A true 3D environment pass
+   needs authored geometry/materials (art assets) beyond primitives.
 2. **iOS build** — needs macOS/Xcode. Android is the verified mobile target.
 3. **On-device run** — descoped by the project owner.
 4. Long-form human playtesting for feel / difficulty tuning (not a pass/fail gate).
