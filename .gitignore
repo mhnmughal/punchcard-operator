@@ -11,3 +11,5 @@
 Assets/AudioProvenance~/
 Assets/Screenshots/
 Assets/Screenshots.meta
+Build/
+.utmp/

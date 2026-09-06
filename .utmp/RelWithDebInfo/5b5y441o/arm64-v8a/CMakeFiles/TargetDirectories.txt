@@ -1,8 +1,0 @@
-I:/UnityProject/Punchcard Operator/.utmp/RelWithDebInfo/5b5y441o/arm64-v8a/CMakeFiles/edit_cache.dir
-I:/UnityProject/Punchcard Operator/.utmp/RelWithDebInfo/5b5y441o/arm64-v8a/CMakeFiles/rebuild_cache.dir
-I:/UnityProject/Punchcard Operator/.utmp/RelWithDebInfo/5b5y441o/arm64-v8a/GameActivity/CMakeFiles/game.dir
-I:/UnityProject/Punchcard Operator/.utmp/RelWithDebInfo/5b5y441o/arm64-v8a/GameActivity/CMakeFiles/edit_cache.dir
-I:/UnityProject/Punchcard Operator/.utmp/RelWithDebInfo/5b5y441o/arm64-v8a/GameActivity/CMakeFiles/rebuild_cache.dir
-I:/UnityProject/Punchcard Operator/.utmp/RelWithDebInfo/5b5y441o/arm64-v8a/FramePacing/CMakeFiles/swappywrapper.dir
-I:/UnityProject/Punchcard Operator/.utmp/RelWithDebInfo/5b5y441o/arm64-v8a/FramePacing/CMakeFiles/edit_cache.dir
-I:/UnityProject/Punchcard Operator/.utmp/RelWithDebInfo/5b5y441o/arm64-v8a/FramePacing/CMakeFiles/rebuild_cache.dir

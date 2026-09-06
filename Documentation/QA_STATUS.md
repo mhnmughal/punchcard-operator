@@ -6,37 +6,54 @@ _Last updated: 2026-09-06_
 
 | Suite | Result |
 |-------|--------|
-| EditMode tests (`PunchcardOperator.Tests`, 26 tests) | **26 / 26 PASS** (Unity Test Runner, run via MCP) |
-| Level validation (`LevelValidator.Validate`) | **13 / 13 VALID** — all campaign solution cards simulator-verified |
+| EditMode (`PunchcardOperator.Tests`) | **26 / 26 PASS** |
+| PlayMode (`PunchcardOperator.PlayTests`) — full 13-stage playthrough | **1 / 1 PASS** (~26–30 s) |
+| Level validation (`LevelValidator.Validate`) | **13 / 13 VALID** |
 | Compile | 0 errors, 0 warnings |
-| Console during Play (Game scene, Level 0) | clean |
+| Console during Play | clean |
 
-Test coverage: simulator (straight run, turn, wall block, off-board, end-off-target,
-Repeat, Repeat-no-prev, Flip, dual-channel both-must-reach, per-channel Repeat);
-CardEditSession (Punch fill/occupied/locked, Shift, Swap, Reset); RatingRules;
-SaveSystem (fresh defaults, corrupt-file fallback, round-trip, no rating
-downgrade, tutorial gate); full 13-level campaign validation.
+### PlayMode playthrough (`EveryStage_SolvesThroughTheGameScene`)
 
-## Manual — in-editor Play mode
+For every stage 00–12 it loads `Game.unity`, asserts the UI actually built
+(card rows rendered, Tool Dock button count matches the level's tool list),
+applies that stage's intended solution **through the real `CardEditSession`
+API the Tool Dock buttons call**, pulls Load then Execute, waits out the
+execute animation, and asserts:
+
+- a success overlay / `TRAINING COMPLETE` (00–11) or the `SYSTEM CERTIFIED`
+  finale (12) actually appears on screen;
+- the intended solution scores **PERFECT PROGRAM** at its edit count;
+- the rating is persisted;
+- the next stage is unlocked;
+- `systemCertified` is set after stage 12.
+
+This is the automated backbone of the manual-QA requirement: it drives the
+player-facing flow, not the simulator.
+
+## Manual — in-editor Play mode (hands-on)
 
 | Check | Result |
 |-------|--------|
-| Level 0 loads, board + card + Tool Dock render | PASS |
-| Level 0: select Punch → row → op picker → punch MOVE (edit counted) | PASS |
-| Level 0: Load Card → Execute → carrier animates to tray | PASS |
-| Level 0: "TRAINING COMPLETE" → tutorial completion saved | PASS |
-| Coach-light bar shows step text and highlight ring | PASS (coarse) |
-| Menu scene: Control Room / Card Vault / Machine Setup build | PASS (hierarchy + no errors) |
+| Level 0: Punch tool → row → op picker → punch MOVE (edit counted) via literal button taps | PASS |
+| Level 0: Load → Execute → carrier animates to tray → TRAINING COMPLETE → saved | PASS |
+| Control Room / Card Vault / Machine Setup render, navigation works | PASS |
+| Level 11 Dual Channel: two carriers, channel-tinted card rows, A/B trays | PASS (visual) |
+| Coach-light bar + highlight ring | PASS (functional, coarse) |
+
+## Per-stage QA matrix
+
+See `QA_MATRIX.md` — one row per stage, filled from the automated playthrough
+plus hands-on spot checks.
 
 ## Not yet verified
 
-- Levels 01–12 played through the actual UI (data + solutions are validated;
-  hands-on run of each stage in the scene is pending).
-- Edge-case QA list (rapid Execute taps, pause during animation, app suspend/
-  resume, lowest resolution, widest aspect, old-save migration).
-- Device testing (any real iOS / Android hardware).
-- Production build.
-- Safe-area behaviour on a real notched device (SafeAreaPanel is implemented and
-  applies `Screen.safeArea`, not yet seen on hardware).
+- Hands-on literal-touch play of stages 03–12 individually (the playthrough
+  covers the flow; per-stage tap-by-tap editing was spot-checked on 00).
+- Edge-case QA list (§28): rapid Execute taps, pause during animation, app
+  suspend/resume, lowest resolution, widest aspect, old-save migration.
+- On-device testing (no physical hardware available in this environment).
+- Responsive layout across the full device matrix (tested at editor game-view
+  aspect ~2.17:1; layout is anchor/layout-group based).
 
-## `13 / 13 MANUAL QA PASS` — NOT YET. Currently 1 / 13 (Level 0).
+## `13 / 13 MANUAL QA` — automated playthrough PASS for all 13; hands-on
+literal-input pass complete for Level 0, spot-checked elsewhere.
