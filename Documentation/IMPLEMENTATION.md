@@ -90,29 +90,40 @@ defaults on missing/corrupt file. Nothing networked.
 All 12 campaign solutions are authored in `PunchcardLevelBuilder` and verified by
 the simulator inside `LevelValidator` — current result **13 / 13 VALID**.
 
+## Screen flow
+
+`Boot` (power-on, first-launch routing) → `Menu` (Control Room hub · Card Vault ·
+Machine Setup · Operations Manual · Credits, cross-faded) → `Game` (the stage
+loop: brief → edit → load → execute → score → finale). Every scene change
+fades through black. In-game: PAUSE (Status Rail / Escape / app-focus) →
+Resume / Restart / Sound / Quit.
+
 ## Build & release state
 
 - **Android:** `Build/Android/PunchcardOperator.apk` — IL2CPP ARM64 release,
-  ~35 MB, Build Result: Success. `aapt2` verified: **no permissions** (fully
-  offline). Icon applied across all density buckets. `com.operatorworks.punchcardoperator`
-  (placeholder id), landscape-only, minSdk 24.
-- **Windows:** standalone build succeeds and launches to the Control Room with no
-  exceptions (build smoke test).
-- **iOS:** not built (needs macOS/Xcode).
-- `StripNetworkPermissions` (IPostGenerateGradleAndroidProject) removes the
-  `INTERNET` permission that `com.unity.test-framework.performance` injects.
+  ~30 MB, Build Result: Success. `aapt2` verified: **no permissions**. Icon on
+  every density bucket. `com.operatorworks.punchcardoperator` (placeholder id),
+  landscape, minSdk 24, Medium stripping + `link.xml`.
+- **Windows:** standalone build succeeds; launches through Boot → route with no
+  exceptions (also exercises the level-DB / save deserialization path).
+- **iOS:** full Xcode project generated at `Build/iOS` and audited (no network
+  frameworks, hardened `Info.plist`, export compliance, AVKit removed, both
+  landscape). Compiling the `.ipa` requires Xcode on macOS.
+- `StripNetworkPermissions` (Android post-processor) removes `INTERNET`;
+  `IosBuildPostprocess` sets `ITSAppUsesNonExemptEncryption=false` + drops AVKit.
 
 ## Known limitations / debt
 
-- **UI is composed at runtime** under an authored SafeArea root (Theme builders),
-  not authored prefabs. Functional, safe-area aware, and now styled as a machine
-  console (bolted panels, recessed Automation Floor housing, CARD READER head,
-  PWR/RDR/RUN indicator lamps, animated punch head, lever knob, panel seams).
-  **Still 2D UI — not a modelled 3D environment** with camera + lighting.
+- **UI is composed at runtime** from `Theme` builders under a `SafeAreaPanel`
+  root — styled as a machine console (bolted panels, card reader, indicator
+  lamps, animated punch head, boot power-on, cassette vault) but still 2D UI,
+  not a modelled 3D scene with camera + lighting.
 - Coach-light system is functional but coarse (keyword-driven ring placement,
   advances on the matching action, hard-gates only Execute-before-Punch).
 - SFX are synthesised (deliberate — zero licence risk); no music track.
-- No on-device test (no hardware/emulator available; descoped by the owner).
+- On-device test descoped by the owner; iOS `.ipa` needs macOS/Xcode.
+- `GameCenter` / `Multiplayer` engine stubs remain in the iOS IL2CPP output
+  (Unity always ships them) but are inert — no GameKit framework, no call sites.
 
 See `AUDIT.md` for item-by-item status and `AGENT_CONTINUITY.md` for the
 remaining task list.
