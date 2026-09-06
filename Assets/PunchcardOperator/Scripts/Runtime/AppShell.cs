@@ -266,20 +266,20 @@ namespace PunchcardOperator
             fill.color = Theme.Base;
             fill.raycastTarget = false;
 
-            for (int i = 0; i < 14; i++)
+            for (int i = 0; i < 12; i++)
             {
                 var m = Theme.Rect("mote", rt);
                 var img = m.gameObject.AddComponent<Image>();
-                img.sprite = Theme.PanelSprite; img.type = Image.Type.Sliced;
+                // soft radial glows, not rectangles - never mistaken for a UI panel
+                img.sprite = Theme.GlowSprite; img.type = Image.Type.Simple;
                 img.raycastTarget = false;
-                img.color = new Color(1, 1, 1, UnityEngine.Random.Range(0.012f, 0.03f));
-                float w = UnityEngine.Random.Range(120f, 320f);
-                m.sizeDelta = new Vector2(w, w * 0.62f);
+                img.color = new Color(0.62f, 0.70f, 0.85f, UnityEngine.Random.Range(0.020f, 0.045f));
+                float w = UnityEngine.Random.Range(280f, 620f);
+                m.sizeDelta = new Vector2(w, w * 0.8f);
                 m.anchorMin = m.anchorMax = new Vector2(0.5f, 0.5f);
-                m.anchoredPosition = new Vector2(UnityEngine.Random.Range(-1000f, 1000f), UnityEngine.Random.Range(-560f, 560f));
-                m.localEulerAngles = new Vector3(0, 0, UnityEngine.Random.Range(-12f, 12f));
+                m.anchoredPosition = new Vector2(UnityEngine.Random.Range(-1100f, 1100f), UnityEngine.Random.Range(-800f, 800f));
                 _motes.Add(m);
-                _vel.Add(new Vector2(UnityEngine.Random.Range(-8f, 8f), UnityEngine.Random.Range(3f, 12f)));
+                _vel.Add(new Vector2(UnityEngine.Random.Range(-6f, 6f), UnityEngine.Random.Range(4f, 10f)));
             }
             Theme.Vignette(rt);
         }
@@ -289,7 +289,7 @@ namespace PunchcardOperator
             for (int i = 0; i < _motes.Count; i++)
             {
                 var p = _motes[i].anchoredPosition + _vel[i] * Time.unscaledDeltaTime;
-                if (p.y > 620f) p = new Vector2(UnityEngine.Random.Range(-1000f, 1000f), -620f);
+                if (p.y > 900f) p = new Vector2(UnityEngine.Random.Range(-1100f, 1100f), -900f);
                 _motes[i].anchoredPosition = p;
             }
         }

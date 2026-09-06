@@ -315,25 +315,22 @@ namespace PunchcardOperator
             Bolts(dock.transform, 12f);
             var drt = (RectTransform)dock.transform;
             drt.anchorMin = new Vector2(0, 0); drt.anchorMax = new Vector2(1, 0); drt.pivot = new Vector2(0.5f, 0);
-            drt.sizeDelta = new Vector2(0, 168); drt.anchoredPosition = Vector2.zero;
+            drt.sizeDelta = new Vector2(0, 164); drt.anchoredPosition = Vector2.zero;
             Theme.Label("DockTag", dock.transform, "TOOL DOCK", 13, Theme.InkDim, TextAlignmentOptions.TopLeft)
-                .GetComponent<RectTransform>().Set(new Vector2(0, 1), new Vector2(0, 1), new Vector2(0, 1), new Vector2(160, 20), new Vector2(20, -2));
+                .GetComponent<RectTransform>().Set(new Vector2(0, 1), new Vector2(0, 1), new Vector2(0, 1), new Vector2(160, 20), new Vector2(22, -6));
 
             _toolRow = Theme.Rect("ToolRow", dock.transform);
-            _toolRow.anchorMin = new Vector2(0, 0); _toolRow.anchorMax = new Vector2(0.66f, 1);
-            _toolRow.offsetMin = new Vector2(20, 16); _toolRow.offsetMax = new Vector2(-10, -22);
+            _toolRow.anchorMin = new Vector2(0, 0); _toolRow.anchorMax = new Vector2(0.64f, 1);
+            _toolRow.offsetMin = new Vector2(22, 18); _toolRow.offsetMax = new Vector2(-7, -24);
             var hlg = _toolRow.gameObject.AddComponent<HorizontalLayoutGroup>();
-            hlg.spacing = 10; hlg.childControlWidth = true; hlg.childControlHeight = true;
+            hlg.spacing = 14; hlg.childControlWidth = true; hlg.childControlHeight = true;
             hlg.childForceExpandWidth = true; hlg.childForceExpandHeight = true;
 
             _leverBtn = Theme.TextButton("Lever", dock.transform, "LOAD CARD", Theme.Amber, Theme.PanelDark, OnLever);
             var lrt = (RectTransform)_leverBtn.transform;
-            lrt.anchorMin = new Vector2(0.66f, 0); lrt.anchorMax = new Vector2(1, 1);
+            lrt.anchorMin = new Vector2(0.64f, 0); lrt.anchorMax = new Vector2(1, 1);
             lrt.pivot = new Vector2(0.5f, 0.5f);
-            lrt.offsetMin = new Vector2(4, 16); lrt.offsetMax = new Vector2(-20, -22);
-            var knob = Theme.Panelled("knob", _leverBtn.transform, Theme.PanelDark);
-            ((RectTransform)knob.transform).Set(new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(40, 14), new Vector2(0, 6));
-            knob.raycastTarget = false;
+            lrt.offsetMin = new Vector2(7, 18); lrt.offsetMax = new Vector2(-22, -24);
             _leverLabel = _leverBtn.GetComponentInChildren<TextMeshProUGUI>();
 
             // toast + coach
