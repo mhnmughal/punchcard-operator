@@ -2,63 +2,86 @@
 
 _Last updated: 2026-09-06 — Unity 6000.3.19f1_
 
-## Runtime dependencies actually used
+## Full dependency manifest (`Packages/manifest.json`)
 
-| Package | Why | Network / telemetry |
-|---------|-----|---------------------|
-| com.unity.render-pipelines.universal | URP renderer | No |
-| com.unity.ugui (incl. TextMeshPro) | all UI + text | No |
-| com.unity.inputsystem | UI pointer/touch input module | No |
-| engine modules (audio, ui, uielements, jsonserialize, imageconversion, imgui, particlesystem, physics, physics2d, animation, director, screencapture, video, vectorgraphics, tilemap, 2d.*, ai, cloth, umbra, unitywebrequest*) | engine defaults | No |
+```
+com.anklebreaker.unity-mcp        (git)   editor-only build tool — see below
+com.unity.ide.rider / visualstudio        editor-only IDE integration
+com.unity.inputsystem            1.19.0   UI pointer / touch / Escape key
+com.unity.render-pipelines.universal 17.3  renderer (standard UniversalRenderer)
+com.unity.test-framework          1.6.0   EditMode + PlayMode suites
+com.unity.ugui                    2.0.0    UI + TextMeshPro
+com.unity.modules.{accessibility, animation, audio, imageconversion, imgui,
+  jsonserialize, physics2d, screencapture, ui, uielements, umbra}   engine
+```
 
-## Removed during cleanup
+`packages-lock.json` after resolve pulls back only `physics`, `terrain` and
+`hierarchycore` as **URP / UGUI transitive dependencies** — not requestable to
+remove without removing URP itself.
 
-`com.unity.multiplayer.center`, `com.unity.visualscripting`, `com.unity.timeline`,
-`com.unity.collab-proxy` (packages), and engine modules `terrain`,
-`terrainphysics`, `vehicles`, `vr`, `wind`, `xr` — none referenced by the game.
-Compile + 26/26 EditMode + 1/1 PlayMode re-verified after each removal.
+## Removed during cleanup (verified gone from `packages-lock.json`)
 
-## Editor-only, not compiled into the player
+- **All networking:** `com.unity.modules.unitywebrequest` +
+  `unitywebrequestassetbundle` + `unitywebrequestaudio` + `unitywebrequesttexture`
+  + `unitywebrequestwww`
+- **Analytics:** `com.unity.modules.unityanalytics`
+- **All 2D packages:** `com.unity.2d.animation`, `2d.aseprite`, `2d.psdimporter`,
+  `2d.sprite`, `2d.spriteshape`, `2d.tilemap`, `2d.tilemap.extras`, `2d.tooling`
+- `com.unity.multiplayer.center`, `com.unity.visualscripting`, `com.unity.timeline`,
+  `com.unity.collab-proxy`
+- Engine modules: `ai`, `cloth`, `director`, `particlesystem`, `video`,
+  `vectorgraphics`, `adaptiveperformance`, `androidjni`, `assetbundle`, `tilemap`,
+  `terrainphysics`, `vehicles`, `vr`, `wind`, `xr`
+- The URP renderer was switched from the template's **2D Renderer** to a standard
+  `UniversalRendererData` (`Assets/Settings/UniversalRenderer.asset`), and the
+  leftover `Renderer2D.asset` + template scenes were deleted.
 
-- `com.anklebreaker.unity-mcp` — the MCP bridge used to build this project.
-  Editor assembly only (lives under the package's `Editor/` tree); Unity never
-  includes editor assemblies in a player build. **Evidence:** the Android APK is
-  an IL2CPP build — all managed code is in `libil2cpp.so`; there is no Managed/
-  DLL folder to leak an editor assembly into, and the editor assembly is not
-  compiled for the player target at all. Removing the manifest line is a
-  one-liner for a pristine release checkout and has zero build/runtime impact.
-- `com.unity.ide.rider`, `com.unity.ide.visualstudio` — IDE integration, editor only.
-- `com.unity.test-framework` (+ transitive `com.unity.test-framework.performance`)
-  — needed for the EditMode/PlayMode suites this project ships. The performance
-  package's build hook injects `android.permission.INTERNET`; a build
-  post-processor (`StripNetworkPermissions`) removes it from the merged manifest.
-  **Verified:** `aapt2 dump permissions` on the shipped APK → no INTERNET, no
-  network permissions (see OFFLINE_AUDIT.md).
+## `com.anklebreaker.unity-mcp` (the MCP bridge)
+
+Editor tooling used to build this project. **Not compiled into any player:**
+both the Android APK and the iOS Xcode project are IL2CPP builds and their
+`Il2CppOutputProject` contains only `PunchcardOperator.Runtime` from this
+project's code — no `.Editor`, no `.Tests`, no `Anklebreaker`/`MCP` assembly.
+Left in the manifest per the project owner's instruction to skip it; a one-line
+removal produces a pristine release checkout with zero behaviour change.
 
 ## Prohibited categories — status
 
 | Category | Present? |
 |----------|----------|
-| Ad SDKs | No |
-| Analytics SDKs / active Unity Analytics use | No — no `UnityEngine.Analytics` call sites; `com.unity.modules.unityanalytics` is a dormant engine module |
-| Remote config / cloud save / login / social SDKs | No |
-| Crash-reporting services | No |
-| `Assets/Plugins/` native plugins | None (folder does not exist) |
-| Runtime network calls in game code | None |
+| Ad SDKs / Analytics SDKs / active Unity Analytics | **No** — modules stripped; no `UnityEngine.Analytics` call sites |
+| Remote config / cloud save / login / social SDKs | **No** |
+| Crash-reporting services | **No** |
+| `Assets/Plugins/` native plugins | **None** (folder does not exist) |
+| Runtime network calls in game code | **None** — `grep` of `Assets/PunchcardOperator/Scripts` is clean |
+| Reflection / `Process` / `DllImport` / `Application.OpenURL` / `PlayerPrefs` in game code | **None** — only `Resources.Load`, `Application.Quit`, one save file under `persistentDataPath` |
 
-## APK verification (`aapt2`, IL2CPP ARM64 release)
+## Android APK (`aapt2`, IL2CPP ARM64 release)
 
-- `uses-permission`: **none** (only the self-scoped, non-network AndroidX
-  `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`)
+- `uses-permission`: **none** — only the self-scoped, non-network AndroidX
+  `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`
 - package `com.operatorworks.punchcardoperator`, versionName 1.0.0, versionCode 1
-- `native-code: arm64-v8a`
-- app icon present across all 6 density buckets
+- `native-code: arm64-v8a`, icon across all 6 density buckets
+- `StripNetworkPermissions` post-processor removes `INTERNET` (injected by the
+  transitive `com.unity.test-framework.performance` build hook)
 
-## Build warnings
+## iOS Xcode project (`Build/iOS`)
 
-The Android build log shows ~20 third-party **shader** warnings from URP / SRP
-core (`Terrain/Lit` subshader removal for GLES; `min16float` conversions in
-`com.unity.render-pipelines.core` APV sampling shaders) plus 3 informational TMP
-IL2CPP "method given its own cpp file" notes. **None originate from project
-code**; the game uses no terrain and no adaptive probe volumes. The Unity Editor
-Console is clean (0 warnings). These are non-actionable engine warnings.
+- IL2CPP output: `UnityWebRequestModule`, `UnityAnalytics{,Common}Module`,
+  `UnityConsentModule`, `VideoModule`, `AdaptivePerformanceModule` and the 2D
+  runtime modules are **all gone** after the package strip.
+- `GameCenterModule` / `MultiplayerModule` managed stubs remain in the engine
+  core, but **no `GameKit.framework` is linked** → inert, cannot function.
+- Frameworks: AVFoundation (audio session), AudioToolbox, CoreGraphics/Media/
+  Text/Video, Foundation, GameController (Input System), Metal, QuartzCore,
+  UIKit — plus **Security + SystemConfiguration**, which `UnityFramework` links
+  by default (engine references `SCNetworkReachability` / keychain APIs the game
+  never calls). **AVKit removed** by `IosBuildPostprocess`.
+- `Info.plist`: no permission usage descriptions, no `NSAppTransportSecurity`,
+  no `UIBackgroundModes`, no push entitlements. `ITSAppUsesNonExemptEncryption
+  = false`. Landscape only.
+
+## Action items before store submission
+
+1. Remove `com.anklebreaker.unity-mcp` from the manifest for the release checkout.
+2. On macOS: open `Build/iOS/Unity-iPhone.xcodeproj`, set a signing team, archive.

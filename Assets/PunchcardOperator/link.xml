@@ -1,0 +1,15 @@
+<!--
+  Preserve types that are used via reflection / serialization and would otherwise
+  be dropped by High managed stripping. High stripping is on so that unreferenced
+  engine modules (GameCenter, Multiplayer, ...) are eliminated from the build.
+-->
+<linker>
+  <assembly fullname="PunchcardOperator.Runtime" preserve="all" />
+  <assembly fullname="Unity.TextMeshPro" preserve="all" />
+  <assembly fullname="UnityEngine.UI" preserve="all" />
+  <assembly fullname="Unity.InputSystem" preserve="all" />
+  <assembly fullname="UnityEngine.CoreModule">
+    <type fullname="UnityEngine.JsonUtility" preserve="all" />
+    <type fullname="UnityEngine.TextAsset" preserve="all" />
+  </assembly>
+</linker>
