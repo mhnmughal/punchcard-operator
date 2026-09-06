@@ -83,8 +83,11 @@ namespace PunchcardOperator
             ((RectTransform)disc.transform).Set(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(180, 180), new Vector2(0, -6));
             var dio = disc.gameObject.AddComponent<UnityEngine.UI.Outline>();
             dio.effectColor = Theme.Amber; dio.effectDistance = new Vector2(3, 3);
-            Theme.Label("dg", disc.transform, "◵", 90, Theme.Amber).GetComponent<RectTransform>()
-                .Set(Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
+            var hub = Theme.Panelled("hub", disc.transform, Theme.Amber);
+            ((RectTransform)hub.transform).Set(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(54, 54), Vector2.zero);
+            var spoke = Theme.Panelled("spoke", disc.transform, Theme.Amber);
+            ((RectTransform)spoke.transform).Set(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(10, 150), Vector2.zero);
+            spoke.transform.localEulerAngles = new Vector3(0, 0, 30f);
 
             // nav buttons — right column
             var col = Theme.Rect("Buttons", _controlRoom);
@@ -202,13 +205,13 @@ namespace PunchcardOperator
                 bool unlocked = ProgressionManager.IsUnlocked(lvl);
                 var rating = ProgressionManager.BestRating(lvl.id);
                 string mark = lvl.isTutorial
-                    ? (SaveSystem.Data.tutorialComplete ? "✔" : "▶")
+                    ? (SaveSystem.Data.tutorialComplete ? "COMPLETE" : "START")
                     : rating switch
                     {
-                        LevelRating.PerfectProgram => "◆◆◆",
-                        LevelRating.CompactCard => "◆◆",
-                        LevelRating.Accepted => "◆",
-                        _ => ""
+                        LevelRating.PerfectProgram => "PERFECT PROGRAM",
+                        LevelRating.CompactCard => "COMPACT CARD",
+                        LevelRating.Accepted => "ACCEPTED",
+                        _ => "READY"
                     };
                 var label = $"{lvl.id}\n{lvl.displayName}\n<size=60%>{(unlocked ? mark : "LOCKED")}</size>";
                 var bg = unlocked ? Theme.PanelLight : Theme.PanelDark;

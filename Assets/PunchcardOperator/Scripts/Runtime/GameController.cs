@@ -229,8 +229,10 @@ namespace PunchcardOperator
                 {
                     var wo = img.gameObject.AddComponent<Outline>();
                     wo.effectColor = new Color32(0x0C, 0x0E, 0x11, 0xFF); wo.effectDistance = new Vector2(2, -2);
-                    Theme.Label("x", img.transform, "▤", Mathf.Max(12f, _cell * 0.4f), new Color32(0x4A, 0x42, 0x38, 0xFF))
-                        .GetComponent<RectTransform>().Set(Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
+                    var hatch = Theme.Panelled("x", img.transform, new Color32(0x33, 0x2D, 0x25, 0xFF));
+                    ((RectTransform)hatch.transform).Set(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
+                        new Vector2(_cell * 0.34f, _cell * 0.34f), Vector2.zero);
+                    hatch.transform.localEulerAngles = new Vector3(0, 0, 45f);
                 }
                 _cells[p] = img;
             }
@@ -274,8 +276,11 @@ namespace PunchcardOperator
             rt.sizeDelta = new Vector2(_cell * 0.62f, _cell * 0.62f);
             var o = img.gameObject.AddComponent<Outline>();
             o.effectColor = new Color(0, 0, 0, 0.45f); o.effectDistance = new Vector2(2, -3);
-            Theme.Label(name + "_dir", img.transform, "▲", Mathf.Max(16f, _cell * 0.34f), Theme.PanelDark)
-                .GetComponent<RectTransform>().Set(Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
+            // facing wedge: a small square rotated 45°, poking out the front edge
+            var wedge = Theme.Panelled(name + "_dir", img.transform, Theme.PanelDark);
+            ((RectTransform)wedge.transform).Set(new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 0.5f),
+                new Vector2(_cell * 0.22f, _cell * 0.22f), new Vector2(0, 2));
+            wedge.transform.localEulerAngles = new Vector3(0, 0, 45f);
             if (_def.DualChannel)
                 Theme.Label(name + "_id", img.transform, c == Theme.Blue ? "A" : "B", Mathf.Max(10f, _cell * 0.2f), new Color(0,0,0,0.5f))
                     .GetComponent<RectTransform>().Set(new Vector2(1,1), new Vector2(1,1), new Vector2(1,1), new Vector2(18,18), new Vector2(-2,-2));
@@ -323,8 +328,8 @@ namespace PunchcardOperator
                 var op = Theme.Label("op", rowImg.transform, "", 26, Theme.PanelDark, TextAlignmentOptions.Left);
                 ((RectTransform)op.transform).Set(new Vector2(0, 0), new Vector2(1, 1), new Vector2(0, 0.5f), new Vector2(-110, 0), new Vector2(100, 0));
 
-                var lockG = Theme.Label("lock", rowImg.transform, "🔒", 20, Theme.CardEdge, TextAlignmentOptions.Right);
-                ((RectTransform)lockG.transform).Set(new Vector2(1, 0), new Vector2(1, 1), new Vector2(1, 0.5f), new Vector2(40, 0), new Vector2(-10, 0));
+                var lockG = Theme.Label("lock", rowImg.transform, "LOCKED", 13, Theme.CardEdge, TextAlignmentOptions.Right);
+                ((RectTransform)lockG.transform).Set(new Vector2(1, 0), new Vector2(1, 1), new Vector2(1, 0.5f), new Vector2(84, 0), new Vector2(-10, 0));
 
                 _rowWidgets.Add(new CardRowWidget { index = i, button = btn, background = rowImg, opText = op, hole = hole, lockGlyph = lockG });
             }
@@ -349,7 +354,7 @@ namespace PunchcardOperator
                 w.background.color = sel ? Color.Lerp(baseC, Theme.Good, 0.5f) : baseC;
             }
             _editCounter.text = $"EDITS {_session.EditCount}" +
-                (_def.isTutorial ? "" : $"   ◆{_def.perfectEditTarget}  ◇{_def.compactEditTarget}");
+                (_def.isTutorial ? "" : $"   PERFECT {_def.perfectEditTarget}   COMPACT {_def.compactEditTarget}");
         }
 
         private static string OpText(CardRow r)
@@ -651,7 +656,7 @@ namespace PunchcardOperator
                         return;
                     }
                     Header(panel, "PROGRAM ACCEPTED", Theme.Good);
-                    Body(panel, $"{RatingRules.Label(rating)}\n{_session.EditCount} edit(s)   —   target ◇{_def.compactEditTarget}  ◆{_def.perfectEditTarget}");
+                    Body(panel, $"{RatingRules.Label(rating)}\n{_session.EditCount} edit(s)   -   COMPACT {_def.compactEditTarget}   PERFECT {_def.perfectEditTarget}");
                     Theme.TextButton("Retry", panel.transform, "REPLAY", Theme.PanelLight, Theme.Ink, () => LoadLevel(_def.id))
                         .GetComponent<RectTransform>().Set(new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0), new Vector2(320, 58), new Vector2(30, 28));
                     Theme.TextButton("Next", panel.transform, "NEXT PROGRAM ›", Theme.Good, Theme.PanelDark, () => LoadLevel(next))
