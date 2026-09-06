@@ -2,4 +2,5 @@
   <Project Path="PunchcardOperator.Tests.csproj" />
   <Project Path="PunchcardOperator.Runtime.csproj" />
   <Project Path="PunchcardOperator.Editor.csproj" />
+  <Project Path="PunchcardOperator.PlayTests.csproj" />
 </Solution>
