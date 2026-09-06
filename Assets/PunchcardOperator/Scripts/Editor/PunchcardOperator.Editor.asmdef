@@ -2,7 +2,8 @@
     "name": "PunchcardOperator.Editor",
     "rootNamespace": "PunchcardOperator.EditorTools",
     "references": [
-        "PunchcardOperator.Runtime"
+        "PunchcardOperator.Runtime",
+        "UnityEditor.Android.Extensions"
     ],
     "includePlatforms": [
         "Editor"
