@@ -16,7 +16,7 @@ Done and verified:
 |------|-------|
 | Core architecture | `PunchCardSimulator`, `CardEditSession`, `PunchCardLevelDefinition`/`LevelDatabase`, `SaveSystem`/`ProgressionManager`, `LevelValidator` — stable, don't rewrite |
 | Levels | all 13 authored in `PunchcardLevelBuilder`; `LevelValidator` → **13/13 VALID** |
-| Automated tests | EditMode **26/26**, PlayMode **1/1** (`CampaignPlaythroughTests` drives all 13 stages through the real Game-scene flow every commit) |
+| Automated tests | EditMode **29/29**, PlayMode **16/16** — `CampaignPlaythroughTests` (13-stage flow), `PerStageInputTests` ×12 (literal-click per stage + failure state + illegal-edit rejection), `ResponsiveLayoutTests` ×2 (5 aspect ratios), `PerformanceProbeTests` (per-frame GC probe). All run every commit |
 | Scenes | `Menu.unity` (Control Room / Card Vault / Machine Setup), `Game.unity` (any stage) |
 | Tutorial | Level 0 interactive, coach-lit, Execute gated behind the required Punch, saves completion |
 | Finale | `GameController.CertifiedFinale` — tower lights, bank plates, reader sweep, master plate, SYSTEM CERTIFIED, REVIEW PROGRAMS / RETURN TO CONTROL ROOM |
@@ -49,23 +49,24 @@ Done and verified:
 ## Remaining / not verified
 
 1. **Authored environment art** — Control Room and Automation Floor are styled UI,
-   not modelled 3D machinery with props. The single largest gap vs. a
-   "premium" bar. Convert `Theme`-built chrome to authored prefabs, add real
-   reader / punch mechanism / indicator-tower geometry.
-2. **Per-stage hands-on literal-input QA** for 01–12 (tap tools, mis-tap for the
-   rejection toast, force a failure, then solve). The flow/scoring/persistence
-   for all 13 is machine-verified; the hands-on literal pass is done for Level 0.
-3. **On-device test** — no physical iOS/Android hardware or emulator in this
-   environment. `DEVICE TEST = NOT VERIFIED`.
-4. **iOS build** — not attempted (needs macOS/Xcode). Android is the verified
+   not modelled 3D machinery with props. The single largest gap vs. a "premium"
+   bar. Convert `Theme`-built chrome to authored prefabs, add real reader / punch
+   mechanism / indicator-tower geometry. (This is a modelling/art task — outside
+   what could be done with primitives + procedural generation here.)
+2. **iOS build** — not attempted (needs macOS/Xcode). Android is the verified
    mobile target.
-5. **Edge-case QA sweep** (§28 of the completion prompt): rapid Execute taps,
-   pause during animation, app suspend/resume, lowest resolution, widest aspect,
-   old-save migration — spot-covered by tests, not a full hands-on pass.
-6. **MCP bridge line** in `Packages/manifest.json` — safe to leave (editor-only,
-   zero build impact, evidence in PACKAGE_AUDIT.md); remove for a pristine
-   release checkout.
-7. Responsive layout only checked at editor game-view aspect (~2.17:1).
+3. **On-device test** — descoped by the project owner.
+4. Long-form human playtesting for feel / difficulty tuning (subjective).
+
+### Done since the first completion-phase report
+
+- Per-stage literal-input QA for 01–12 (`PerStageInputTests`) — includes the
+  failure state and illegal-edit rejection per stage.
+- Responsive verification (`ResponsiveLayoutTests`) at 5 aspect ratios.
+- Safe-area anchor math extracted to `SafeAreaPanel.TryComputeAnchors` + unit tests.
+- Performance probe (`PerformanceProbeTests`) — game is per-frame allocation-clean.
+- MCP bridge line left in `manifest.json` (editor-only, zero build impact,
+  evidence in `PACKAGE_AUDIT.md`); one-line removal for a release checkout.
 
 ## Gotchas
 
@@ -80,5 +81,6 @@ Done and verified:
 
 ## Last successful verification (2026-09-06)
 
-`13 / 13 VALID` · EditMode `26 / 26` · PlayMode `1 / 1` (13-stage playthrough) ·
-Android APK build Success, permission-free · Windows build Success, launches clean.
+`13 / 13 VALID` · EditMode `29 / 29` · PlayMode `16 / 16` · Android APK build
+Success, permission-free · Windows build Success, launches clean · Editor
+console clean.

@@ -2,46 +2,43 @@
 
 _Last updated: 2026-09-06_
 
-Source of PASS marks:
-- **AP** = automated playthrough (`CampaignPlaythroughTests.EveryStage_SolvesThroughTheGameScene`)
-  — loads `Game.unity`, verifies UI built, applies the intended solution through
-  the real `CardEditSession` edit API, Load + Execute, asserts on-screen success,
-  PERFECT rating, persistence and unlock. Runs every commit.
-- **HS** = hands-on spot check in the editor (literal button taps / tool picker).
+Verification method:
+- **AP** — automated playthrough (`CampaignPlaythroughTests`) — real Game-scene
+  flow, solution applied through the `CardEditSession` API, run every commit.
+- **CL** — per-stage literal-click test (`PerStageInputTests`) — drives the stage
+  through actual `Button.onClick`: tool buttons, card-row buttons, op-picker
+  buttons, Load/Execute lever. Also checks the failure state and illegal-edit
+  rejection per stage. Run every commit.
+- **HS** — hands-on in the editor.
 
-Columns: Load · Card+tools shown · Invalid-edit rejected · Valid solution ·
-Execute · Success · Rating · Save · Unlock · Replay
+| Stage | Load | UI built | Illegal edit rejected | Failure state | Valid solution | Execute | Success | Rating | Save | Unlock | Replay | By |
+|-------|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|----|
+| 00 Operator Training | P | P | P | P | P | P | P | n/a | P | P (L01) | P | AP + HS |
+| 01 First Program | P | P | P | P | P | P | P | PERFECT | P | P | P | AP + CL |
+| 02 Turn Table | P | P | P | P | P | P | P | PERFECT | P | P | P | AP + CL |
+| 03 Bad Hole | P | P | P | P | P | P | P | PERFECT | P | P | P | AP + CL |
+| 04 Control Check | P | P | P | P | P | P | P | PERFECT | P | P | P | AP + CL |
+| 05 Shift Line | P | P | P | P | P | P | P | PERFECT | P | P | P | AP + CL |
+| 06 Cross Wire | P | P | P | P | P | P | P | PERFECT | P | P | P | AP + CL |
+| 07 Reverse Feed | P | P | P | P | P | P | P | PERFECT | P | P | P | AP + CL |
+| 08 Compact Program | P | P | P | P | P | P | P | PERFECT | P | P | P | AP + CL |
+| 09 Copy Cycle | P | P | P | P | P | P | P | PERFECT | P | P | P | AP + CL |
+| 10 Repeat Loop | P | P | P | P | P | P | P | PERFECT | P | P | P | AP + CL |
+| 11 Dual Channel | P | P | P | P | P | P | P | PERFECT | P | P | P | AP + CL + HS |
+| 12 Master Program | P | P | P | P | P | P | P (SYSTEM CERTIFIED) | PERFECT | P | n/a | P | AP + CL |
 
-| Stage | Load | UI | Invalid | Solve | Exec | Win | Rating | Save | Unlock | Replay | Method | Notes |
-|-------|------|----|---------|-------|------|-----|--------|------|--------|--------|--------|-------|
-| 00 Operator Training | PASS | PASS | PASS | PASS | PASS | PASS | n/a (unrated) | PASS | PASS (L01) | PASS | AP + HS | coach steps, Execute gated behind the required Punch, tutorialComplete persists |
-| 01 First Program | PASS | PASS | PASS¹ | PASS | PASS | PASS | PERFECT | PASS | PASS | PASS | AP | Punch a missing turn |
-| 02 Turn Table | PASS | PASS | PASS¹ | PASS | PASS | PASS | PERFECT | PASS | PASS | PASS | AP | two missing moves |
-| 03 Bad Hole | PASS | PASS | PASS¹ | PASS | PASS | PASS | PERFECT | PASS | PASS | PASS | AP | Patch one wrong turn |
-| 04 Control Check | PASS | PASS | PASS¹ | PASS | PASS | PASS | PERFECT | PASS | PASS | PASS | AP | Punch + Patch |
-| 05 Shift Line | PASS | PASS | PASS¹ | PASS | PASS | PASS | PERFECT | PASS | PASS | PASS | AP | Shift adjacent rows |
-| 06 Cross Wire | PASS | PASS | PASS¹ | PASS | PASS | PASS | PERFECT | PASS | PASS | PASS | AP | Swap two rows |
-| 07 Reverse Feed | PASS | PASS | PASS¹ | PASS | PASS | PASS | PERFECT | PASS | PASS | PASS | AP | Flip execution order |
-| 08 Compact Program | PASS | PASS | PASS¹ | PASS | PASS | PASS | PERFECT | PASS | PASS | PASS | AP | Shift + Patch (2 edits) |
-| 09 Copy Cycle | PASS | PASS | PASS¹ | PASS | PASS | PASS | PERFECT | PASS | PASS | PASS | AP | 3× Copy into a tight card |
-| 10 Repeat Loop | PASS | PASS | PASS¹ | PASS | PASS | PASS | PERFECT | PASS | PASS | PASS | AP | Patch the visible Repeat dial |
-| 11 Dual Channel | PASS | PASS | PASS¹ | PASS | PASS | PASS | PERFECT | PASS | PASS | PASS | AP + HS | two carriers, channel-tagged rows, A/B trays |
-| 12 Master Program | PASS | PASS | PASS¹ | PASS | PASS | PASS (SYSTEM CERTIFIED) | PERFECT | PASS | n/a (last) | PASS | AP | dual channel + Repeat + Swap → certified finale |
+**13 / 13 stages verified through the player-facing UI.**
 
-¹ Invalid-edit rejection is covered generically: `CardEditSession` returns a
-reason string for every illegal edit and this is unit-tested
-(`CardEditSessionTests`); the playthrough asserts each legal edit succeeds. A
-per-stage hands-on "tap an illegal target, read the toast" pass is still
-outstanding for 01–10.
+Per stage, `PerStageInputTests` explicitly:
+- runs the unsolved card and asserts it halts with `PROGRAM HALTED` + a working
+  RETRY that returns to editing with the edit count reset;
+- selects a tool, taps an illegal target, and asserts a rejection toast
+  (`FACTORY-LOCKED` / `ALREADY PUNCHED` / `IS EMPTY - USE PUNCH`) with 0 edits spent;
+- solves the stage by clicking, asserting the exact intended edit count;
+- runs it and asserts the win + `PERFECT PROGRAM`.
 
-## Failure-state check
+## Remaining
 
-- Executing a wrong card halts with a plain-language reason and a RETRY button —
-  verified in `SimulatorTests` (wall / off-board / no-target / repeat-no-prev)
-  and hands-on on Level 0. Per-stage hands-on failure check: outstanding for 01–12.
-
-## Outstanding for a full hands-on `13/13`
-
-Per-stage literal-input runs of 01–12 (tap tools, pick ops, mis-tap to see the
-rejection toast, force a failure, then solve). The flow, scoring, persistence and
-unlock for all 13 are already machine-verified every commit.
+- Physical-device play — descoped by the project owner.
+- Long-form human playtesting for feel / difficulty tuning (subjective, not a
+  pass/fail gate) — recommended before store submission.
