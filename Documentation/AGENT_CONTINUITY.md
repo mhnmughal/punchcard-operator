@@ -5,75 +5,80 @@ _Last updated: 2026-09-06_
 Read this + `IMPLEMENTATION.md` before continuing. Do not rediscover the project
 from chat history.
 
-## Current state
+## Current state — production completion phase
 
-Green-field Unity 6000.3.19f1 URP project. Built so far:
+Unity 6000.3.19f1, URP, offline mobile puzzle game. **13 stages: Level 0 +
+Levels 01–12.** No obsolete 42-level content anywhere (green-field build).
 
-- **Core architecture — done & tested.** Simulator, edit session, level data
-  (ScriptableObjects), save/progression, validator. 26 EditMode tests pass.
-  `Punchcard Operator/Rebuild All Levels` menu item regenerates all 13 level
-  assets from `PunchcardLevelBuilder.cs` and validates them (13/13).
-- **All 13 levels designed as data** with simulator-verified solutions.
-- **Playable vertical slice — done.** `Game.unity` runs any level id; full loop
-  (edit → load → execute → animate → score → save → advance) verified in Play
-  mode for Level 0. `Menu.unity` has Control Room / Card Vault / Machine Setup.
-- **Audio:** runtime-synthesised SFX only (`Sfx.cs`). No music.
+Done and verified:
 
-## Architecture decisions made
+| Area | State |
+|------|-------|
+| Core architecture | `PunchCardSimulator`, `CardEditSession`, `PunchCardLevelDefinition`/`LevelDatabase`, `SaveSystem`/`ProgressionManager`, `LevelValidator` — stable, don't rewrite |
+| Levels | all 13 authored in `PunchcardLevelBuilder`; `LevelValidator` → **13/13 VALID** |
+| Automated tests | EditMode **26/26**, PlayMode **1/1** (`CampaignPlaythroughTests` drives all 13 stages through the real Game-scene flow every commit) |
+| Scenes | `Menu.unity` (Control Room / Card Vault / Machine Setup), `Game.unity` (any stage) |
+| Tutorial | Level 0 interactive, coach-lit, Execute gated behind the required Punch, saves completion |
+| Finale | `GameController.CertifiedFinale` — tower lights, bank plates, reader sweep, master plate, SYSTEM CERTIFIED, REVIEW PROGRAMS / RETURN TO CONTROL ROOM |
+| Audio | `Sfx.cs` — synthesised, 6-source pool, per-cue pitch drift, layering, chords. No external files |
+| Icon | `IconGenerator` → procedural punch-card art, assigned to all icon slots |
+| Player Settings | landscape-only, `com.operatorworks.punchcardoperator` (placeholder), Android IL2CPP/ARM64, minSdk 24, no internet permission, iOS 13 |
+| Offline | no network APIs in code; `StripNetworkPermissions` post-processor removes INTERNET; **APK verified permission-free via aapt2** |
+| Builds | **Android APK — Build Success, IL2CPP ARM64, verified offline.** Windows standalone — Build Success, launches to Control Room with no exceptions |
+| Console | Editor Console clean (0 errors, 0 warnings). Build log has ~20 third-party URP/TMP shader warnings, documented as non-actionable |
+| Docs | `Documentation/` — implementation, audit, QA matrix, provenance ×2, package audit, offline audit, originality, this file |
 
-1. One `PunchcardOperator.Runtime` asmdef holds gameplay + UI MonoBehaviours
-   (references TMP + UGUI). Editor tooling and tests are separate asmdefs.
-2. Level design lives in code (`PunchcardLevelBuilder`) so it is reviewable and
-   every solution is simulator-checked on rebuild. The `.asset` files are
-   generated output.
-3. `LevelDatabase.asset` lives in `Resources/` so the build can load it without a
-   scene reference.
-4. Gameplay UI is composed at runtime from `Theme` builders under an authored
-   `SafeAreaPanel` root. **Known tradeoff** — see debt list.
-5. Shift = swap with the adjacent row (empty or not); Swap = any two rows.
-6. `Repeat` is per-channel and its count is always visible on the row.
-7. Success requires the carrier to *finish* on the target (passing through and
-   leaving is a fail) — deliberate, keeps the rule legible.
+## Architecture decisions (unchanged)
 
-## Remaining tasks (roughly in order)
+1. One `PunchcardOperator.Runtime` asmdef (gameplay + UI + refs TMP/UGUI).
+   `PunchcardOperator.Editor` (tooling, refs `UnityEditor.Android.Extensions`).
+   `PunchcardOperator.Tests` (EditMode). `PunchcardOperator.PlayTests` (PlayMode,
+   no editor deps — kept separate so PlayMode tests are discoverable).
+2. Level design lives in code; `.asset` files are generated output. Menu:
+   `Punchcard Operator/Rebuild All Levels`.
+3. `LevelDatabase.asset` lives in `Resources/`.
+4. Gameplay + menu UI is composed at runtime from `Theme` builders under an
+   authored `SafeAreaPanel` root. **Deliberate tradeoff** — functional, safe-area
+   aware, styled (frames, plates, lamps, channel colour). A bespoke authored
+   3D environment is the main thing still missing (see below).
+5. Shift = swap with adjacent row; Swap = any two rows. Repeat is per-channel,
+   count always visible. Success requires the carrier to finish on the target.
+6. TMP font assets set to Dynamic atlas mode; UI text avoids glyphs LiberationSans
+   lacks (no emoji, geometric marks replaced with Image shapes or words).
 
-1. **Vertical-slice quality gate** (directive §17): play Levels 0–2 through the
-   real UI, fix UI hierarchy / touch targets / overlap / safe area, tighten the
-   coach-light system, verify originality of layout & terminology.
-2. **Scene-authoring pass:** turn the Control Room and Automation Floor into
-   authored environments with real props (reader, punch mechanism, Status Rail,
-   Tool Dock, Machine Service/Setup panels, indicator tower). Convert gameplay
-   chrome from runtime-built to prefabs.
-3. **Play-test & polish Levels 3–12** one at a time (they are data-valid; confirm
-   each is solvable and fun in the scene, tune rating targets).
-4. **System Certified sequence** (directive §15): indicator tower, bank
-   illumination, reader finale, master-status plate, `REVIEW PROGRAMS` /
-   `RETURN TO CONTROL ROOM`.
-5. **Animation / feel pass:** punch + chad, patch, shift/swap/flip/copy, card
-   insertion/removal, reader travel, machine turn, success/failure.
-6. **Audio pass:** balance, anti-repetition, optional licence-clean ambience/music
-   (update `AUDIO_PROVENANCE.md`).
-7. **Game icon** (directive §31) + Player Settings: package name, orientation
-   lock (landscape — current layout assumes it), min SDK/iOS version, splash.
-8. **Edge-case QA** (directive §28) + full `13/13` manual QA.
-9. **Package cleanup:** remove `com.anklebreaker.unity-mcp` and unused packages
-   before build (`PACKAGE_AUDIT.md`).
-10. **Production build** for the target platform; verify it completes and runs
-    offline; re-run the third-party audit on the build output.
-11. Keep `AUDIT.md` honest; flip `PROJECT STATUS` only when nothing is FAIL/NOT
-    VERIFIED.
+## Remaining / not verified
+
+1. **Authored environment art** — Control Room and Automation Floor are styled UI,
+   not modelled 3D machinery with props. The single largest gap vs. a
+   "premium" bar. Convert `Theme`-built chrome to authored prefabs, add real
+   reader / punch mechanism / indicator-tower geometry.
+2. **Per-stage hands-on literal-input QA** for 01–12 (tap tools, mis-tap for the
+   rejection toast, force a failure, then solve). The flow/scoring/persistence
+   for all 13 is machine-verified; the hands-on literal pass is done for Level 0.
+3. **On-device test** — no physical iOS/Android hardware or emulator in this
+   environment. `DEVICE TEST = NOT VERIFIED`.
+4. **iOS build** — not attempted (needs macOS/Xcode). Android is the verified
+   mobile target.
+5. **Edge-case QA sweep** (§28 of the completion prompt): rapid Execute taps,
+   pause during animation, app suspend/resume, lowest resolution, widest aspect,
+   old-save migration — spot-covered by tests, not a full hands-on pass.
+6. **MCP bridge line** in `Packages/manifest.json` — safe to leave (editor-only,
+   zero build impact, evidence in PACKAGE_AUDIT.md); remove for a pristine
+   release checkout.
+7. Responsive layout only checked at editor game-view aspect (~2.17:1).
 
 ## Gotchas
 
-- The project uses the Input System package — EventSystems need
-  `InputSystemUIInputModule`, not `StandaloneInputModule`.
-- `unity_execute_code` takes a bare method body: no `using` directives, fully
-  qualify `UnityEngine.UI.*`, `UnityEngine.EventSystems.*`, `PunchcardOperator.*`.
-- `unity_screenshot_game` writes on the next render and can lag a few seconds; a
-  camera capture (`unity_graphics_game_capture`) can't see a Screen-Space-Overlay
-  canvas.
-- Editor sometimes drops out of Play mode when a script recompiles.
+- Input System package → `InputSystemUIInputModule`, not `StandaloneInputModule`.
+- `unity_execute_code` = bare method body, no `using`, fully-qualified types.
+- `unity_build` for Android exceeds the 120 s MCP queue timeout and returns a
+  "failed" notification while the build actually continues and succeeds — watch
+  the Editor.log / output path, not the MCP result.
+- Editor drops out of Play mode on script recompile.
+- `com.unity.test-framework.performance` injects INTERNET at build time —
+  handled by `StripNetworkPermissions`.
 
-## Last successful validation
+## Last successful verification (2026-09-06)
 
-`13 / 13 VALID` and `26 / 26` EditMode tests — 2026-09-06.
+`13 / 13 VALID` · EditMode `26 / 26` · PlayMode `1 / 1` (13-stage playthrough) ·
+Android APK build Success, permission-free · Windows build Success, launches clean.
