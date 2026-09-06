@@ -11,6 +11,8 @@ namespace PunchcardOperator
     {
         public static string PendingLevelId = "00";
         public static bool ReturnToVaultAfter = true;
+        /// <summary>Which Menu view to show on load: "control" or "vault".</summary>
+        public static string MenuTarget = "control";
 
         private static LevelDatabase _db;
         public static LevelDatabase Database =>

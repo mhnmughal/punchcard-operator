@@ -100,12 +100,28 @@ namespace PunchcardOperator.Tests
                 }
                 Assert.AreEqual("Result", phase.ToString(), $"[{id}] execution never reached Result");
 
-                var overlay = gc.GetType().GetField("_overlay", BF).GetValue(gc) as RectTransform;
-                Assert.IsNotNull(overlay, $"[{id}] no result overlay");
+                if (id == "12")
+                {
+                    float ct = 0;
+                    while (ct < 12f)
+                    {
+                        bool seen = false;
+                        foreach (var lbl in Object.FindObjectsByType<TMPro.TextMeshProUGUI>(FindObjectsSortMode.None))
+                            if (lbl.text.Contains("SYSTEM CERTIFIED")) seen = true;
+                        if (seen) break;
+                        ct += Time.unscaledDeltaTime;
+                        yield return null;
+                    }
+                }
+
+                // gather all on-screen text (result panel for 00-11, certified finale for 12)
                 string text = "";
-                foreach (var lbl in overlay.GetComponentsInChildren<TMPro.TextMeshProUGUI>()) text += lbl.text + " | ";
-                bool win = text.Contains("ACCEPTED") || text.Contains("TRAINING COMPLETE");
-                Assert.IsTrue(win, $"[{id}] not a success overlay: {text}");
+                foreach (var lbl in Object.FindObjectsByType<TMPro.TextMeshProUGUI>(FindObjectsSortMode.None))
+                    text += lbl.text + " | ";
+                bool win = id == "12"
+                    ? text.Contains("SYSTEM CERTIFIED")
+                    : (text.Contains("ACCEPTED") || text.Contains("TRAINING COMPLETE"));
+                Assert.IsTrue(win, $"[{id}] success not shown on screen: {text}");
 
                 if (def.isTutorial)
                 {

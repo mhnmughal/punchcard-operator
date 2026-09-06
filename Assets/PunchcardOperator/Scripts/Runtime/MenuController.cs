@@ -22,7 +22,8 @@ namespace PunchcardOperator
             BuildControlRoom();
             BuildVault();
             BuildSettings();
-            Show(_controlRoom);
+            Show(AppState.MenuTarget == "vault" ? _vault : _controlRoom);
+            AppState.MenuTarget = "control";
         }
 
         private void Show(RectTransform v)
@@ -57,9 +58,17 @@ namespace PunchcardOperator
             Theme.TextButton("Settings", col, "MACHINE SETUP", Theme.PanelLight, Theme.Ink, () => Show(_settings));
             Theme.TextButton("Quit", col, "SHUT DOWN", Theme.PanelLight, Theme.InkDim, Quit);
 
-            Theme.Label("Cert", _controlRoom, "", 24, Theme.Good)
-                .GetComponent<RectTransform>().Set(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(800, 40), new Vector2(0, 40));
+            var certPlate = Theme.Panelled("CertPlate", _controlRoom, Theme.PanelDark);
+            ((RectTransform)certPlate.transform).Set(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(520, 56), new Vector2(0, 40));
+            var certLabel = Theme.Label("Cert", certPlate.transform, "MASTER STATUS — SYSTEM CERTIFIED", 22, Theme.Good);
+            Theme.Stretch((RectTransform)certLabel.transform);
+            var co = certPlate.gameObject.AddComponent<UnityEngine.UI.Outline>();
+            co.effectColor = Theme.Good; co.effectDistance = new Vector2(2, 2);
+            _certPlate = certPlate.gameObject;
+            _certPlate.SetActive(SaveSystem.Data.systemCertified);
         }
+
+        private GameObject _certPlate;
 
         private void StartTutorial()
         {
@@ -115,8 +124,7 @@ namespace PunchcardOperator
             BankRow(body, "BANK B", "Card Manipulation", camp.FindAll(l => l.bank == ProgramBank.B));
             BankRow(body, "BANK C", "Master Control", camp.FindAll(l => l.bank == ProgramBank.C));
 
-            var cert = _controlRoom.Find("Cert").GetComponent<TextMeshProUGUI>();
-            cert.text = SaveSystem.Data.systemCertified ? "SYSTEM CERTIFIED" : "";
+            if (_certPlate != null) _certPlate.SetActive(SaveSystem.Data.systemCertified);
         }
 
         private void BankRow(Transform parent, string code, string name, IList<PunchCardLevelDefinition> levels)

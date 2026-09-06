@@ -612,18 +612,21 @@ namespace PunchcardOperator
                 else
                 {
                     ProgressionManager.RecordCompletion(_def, rating, _session.EditCount, AppState.Database);
-                    Header(panel, "PROGRAM ACCEPTED", Theme.Good);
-                    Body(panel, $"{RatingRules.Label(rating)}\n{_session.EditCount} edit(s)   —   target ◇{_def.compactEditTarget}  ◆{_def.perfectEditTarget}"
-                        + (SaveSystem.Data.systemCertified ? "\n\nSYSTEM CERTIFIED" : ""));
                     var next = NextLevelId();
+                    if (next == null)
+                    {
+                        // Level 12 — the campaign finale
+                        Destroy(_overlay.gameObject);
+                        _overlay = null;
+                        StartCoroutine(CertifiedFinale(rating));
+                        return;
+                    }
+                    Header(panel, "PROGRAM ACCEPTED", Theme.Good);
+                    Body(panel, $"{RatingRules.Label(rating)}\n{_session.EditCount} edit(s)   —   target ◇{_def.compactEditTarget}  ◆{_def.perfectEditTarget}");
                     Theme.TextButton("Retry", panel.transform, "REPLAY", Theme.PanelLight, Theme.Ink, () => LoadLevel(_def.id))
                         .GetComponent<RectTransform>().Set(new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0), new Vector2(320, 58), new Vector2(30, 28));
-                    if (next != null)
-                        Theme.TextButton("Next", panel.transform, "NEXT PROGRAM ›", Theme.Good, Theme.PanelDark, () => LoadLevel(next))
-                            .GetComponent<RectTransform>().Set(new Vector2(1, 0), new Vector2(1, 0), new Vector2(1, 0), new Vector2(320, 58), new Vector2(-30, 28));
-                    else
-                        Theme.TextButton("Vault", panel.transform, "RETURN TO CONTROL ROOM", Theme.Good, Theme.PanelDark, GoBack)
-                            .GetComponent<RectTransform>().Set(new Vector2(1, 0), new Vector2(1, 0), new Vector2(1, 0), new Vector2(360, 58), new Vector2(-30, 28));
+                    Theme.TextButton("Next", panel.transform, "NEXT PROGRAM ›", Theme.Good, Theme.PanelDark, () => LoadLevel(next))
+                        .GetComponent<RectTransform>().Set(new Vector2(1, 0), new Vector2(1, 0), new Vector2(1, 0), new Vector2(320, 58), new Vector2(-30, 28));
                 }
             }
             else
@@ -641,6 +644,98 @@ namespace PunchcardOperator
                 }).GetComponent<RectTransform>().Set(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(300, 60), new Vector2(0, 28));
             }
         }
+
+        private IEnumerator CertifiedFinale(LevelRating rating)
+        {
+            Sfx.Play("execute", 0.7f);
+            var dim = Theme.Panelled("CertifiedOverlay", _root, new Color(0.02f, 0.03f, 0.04f, 0f));
+            var drt = (RectTransform)dim.transform; Theme.Stretch(drt);
+            dim.gameObject.AddComponent<Button>();
+            yield return Tween(0.6f, t => dim.color = new Color(0.02f, 0.03f, 0.04f, 0.92f * t));
+
+            // main indicator tower — a column of lamps that light bottom-up
+            var tower = Theme.Rect("Tower", drt);
+            tower.Set(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(120, 300), new Vector2(0, 40));
+            var lamps = new Image[5];
+            for (int i = 0; i < 5; i++)
+            {
+                var l = Theme.Panelled($"lamp{i}", tower, Theme.PanelLight);
+                ((RectTransform)l.transform).Set(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(100, 46), new Vector2(0, i * 56 + 8));
+                lamps[i] = l;
+            }
+            for (int i = 0; i < 5; i++)
+            {
+                Sfx.Play("reader", 0.7f + i * 0.12f);
+                yield return Tween(0.16f, t => lamps[i].color = Color.Lerp(Theme.PanelLight, Theme.Good, t));
+                yield return new WaitForSecondsRealtime(0.06f);
+            }
+
+            var title = Theme.Label("CertTitle", drt, "SYSTEM CERTIFIED", 64, Theme.Good, TextAlignmentOptions.Center);
+            ((RectTransform)title.transform).Set(new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(1000, 90), new Vector2(0, -120));
+            title.alpha = 0f;
+            Sfx.Play("certified");
+            yield return Tween(0.5f, t => title.alpha = t);
+
+            // program banks illuminate one by one
+            var bankRow = Theme.Rect("Banks", drt);
+            bankRow.Set(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(760, 90), new Vector2(0, 200));
+            var hlg = bankRow.gameObject.AddComponent<HorizontalLayoutGroup>();
+            hlg.spacing = 16; hlg.childControlWidth = true; hlg.childControlHeight = true;
+            hlg.childForceExpandWidth = true; hlg.childForceExpandHeight = true;
+            var plates = new Image[3];
+            string[] names = { "BANK A", "BANK B", "BANK C" };
+            for (int i = 0; i < 3; i++)
+            {
+                var p = Theme.Panelled($"bank{i}", bankRow, Theme.PanelDark);
+                var lab = Theme.Label("l", p.transform, names[i], 24, Theme.InkDim);
+                Theme.Stretch((RectTransform)lab.transform);
+                plates[i] = p;
+                p.gameObject.AddComponent<PlateTag>().label = lab;
+            }
+            for (int i = 0; i < 3; i++)
+            {
+                Sfx.Play("success", 0.8f + i * 0.15f);
+                var tag = plates[i].GetComponent<PlateTag>();
+                yield return Tween(0.28f, t =>
+                {
+                    plates[i].color = Color.Lerp(Theme.PanelDark, Theme.Good, t);
+                    tag.label.color = Color.Lerp(Theme.InkDim, Theme.PanelDark, t);
+                });
+            }
+
+            // card reader final sweep
+            var sweep = Theme.Panelled("ReaderSweep", drt, new Color(Theme.Good.r, Theme.Good.g, Theme.Good.b, 0.5f));
+            var swrt = (RectTransform)sweep.transform;
+            swrt.anchorMin = new Vector2(0, 0.5f); swrt.anchorMax = new Vector2(0, 0.5f);
+            swrt.pivot = new Vector2(0.5f, 0.5f); swrt.sizeDelta = new Vector2(20, 260);
+            Sfx.Play("reader", 1.3f);
+            yield return Tween(0.5f, t => swrt.anchoredPosition = new Vector2(Mathf.Lerp(0, Screen.width, t), 60));
+            Destroy(sweep.gameObject);
+
+            // master status plate
+            var master = Theme.Panelled("MasterPlate", drt, Theme.PanelDark);
+            ((RectTransform)master.transform).Set(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(560, 96), new Vector2(0, -110));
+            var mlab = Theme.Label("ml", master.transform, $"MASTER PROGRAM — {RatingRules.Label(rating)}", 26, Theme.InkDim);
+            Theme.Stretch((RectTransform)mlab.transform);
+            var mo = master.gameObject.AddComponent<Outline>(); mo.effectColor = Theme.Good; mo.effectDistance = new Vector2(2, 2);
+            Sfx.Play("certified", 0.8f);
+            yield return Tween(0.4f, t => { master.color = Color.Lerp(Theme.PanelDark, new Color32(0x1b,0x2c,0x1e,0xFF), t); mlab.color = Color.Lerp(Theme.InkDim, Theme.Good, t); });
+
+            yield return new WaitForSecondsRealtime(0.4f);
+            Theme.TextButton("Review", drt, "REVIEW PROGRAMS", Theme.PanelLight, Theme.Ink, () => { AppState.MenuTarget = "vault"; GoMenu(); })
+                .GetComponent<RectTransform>().Set(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(380, 60), new Vector2(-210, 60));
+            Theme.TextButton("Control", drt, "RETURN TO CONTROL ROOM", Theme.Good, Theme.PanelDark, () => { AppState.MenuTarget = "control"; GoMenu(); })
+                .GetComponent<RectTransform>().Set(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(420, 60), new Vector2(210, 60));
+        }
+
+        private void GoMenu()
+        {
+            Sfx.Play("ui");
+            if (Application.CanStreamedLevelBeLoaded("Menu")) SceneManager.LoadScene("Menu");
+            else LoadLevel("00");
+        }
+
+        private class PlateTag : MonoBehaviour { public TextMeshProUGUI label; }
 
         private void Header(Image panel, string text, Color c) =>
             Theme.Label("h", panel.transform, text, 40, c, TextAlignmentOptions.Top)
