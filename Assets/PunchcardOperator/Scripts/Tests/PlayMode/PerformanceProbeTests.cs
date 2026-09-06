@@ -22,6 +22,8 @@ namespace PunchcardOperator.Tests
         public IEnumerator SetUp()
         {
             SaveSystem.ResetProgress();
+            Fade.Enabled = false;
+            Time.timeScale = 1f;
             SaveSystem.Data.tutorialComplete = true;
             SaveSystem.Data.highestUnlockedIndex = 12;
             yield return null;

@@ -75,6 +75,7 @@ namespace PunchcardOperator
             _phase = Phase.Editing;
             RefreshLever();
             StartCoroutine(DeferredBoard());
+            Fade.In();
         }
 
         private IEnumerator DeferredBoard()
@@ -94,6 +95,87 @@ namespace PunchcardOperator
                 float s = 1f + 0.06f * Mathf.Sin(Time.unscaledTime * 6f);
                 _coachRing.localScale = new Vector3(s, s, 1f);
             }
+            var kb = UnityEngine.InputSystem.Keyboard.current;
+            if (kb != null && kb.escapeKey.wasPressedThisFrame && _def != null)
+                SetPaused(!_paused);
+        }
+
+        private void OnApplicationFocus(bool focus)
+        {
+            if (!focus && !_paused && _def != null && _phase == Phase.Editing) SetPaused(true);
+        }
+
+        private void OnApplicationPause(bool pause)
+        {
+            if (pause && !_paused && _def != null && _phase == Phase.Editing) SetPaused(true);
+        }
+
+        // ---------------------------------------------------------------- pause
+
+        private bool _paused;
+        private GameObject _pauseOverlay;
+
+        private void SetPaused(bool p)
+        {
+            if (p == _paused || _def == null) return;
+            if (p && _phase == Phase.Executing) return; // don't pause mid-run
+            _paused = p;
+            Time.timeScale = p ? 0f : 1f;
+            Sfx.Play("ui");
+            if (!p) { if (_pauseOverlay != null) Destroy(_pauseOverlay); _pauseOverlay = null; return; }
+
+            var dim = Theme.Panelled("PauseOverlay", _root, new Color(0.02f, 0.025f, 0.03f, 0.82f));
+            _pauseOverlay = dim.gameObject;
+            Theme.Stretch((RectTransform)dim.transform);
+            dim.gameObject.AddComponent<Button>();
+            dim.transform.SetAsLastSibling();
+
+            var panel = Theme.Raised("PausePanel", dim.transform, Theme.Panel);
+            ((RectTransform)panel.transform).Set(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(560, 520), Vector2.zero);
+            Theme.Bolts(panel.transform);
+            Theme.Label("h", panel.transform, "PAUSED", Theme.H1, Theme.Amber, TextAlignmentOptions.Top)
+                .GetComponent<RectTransform>().Set(new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1), new Vector2(-40, 56), new Vector2(0, -24));
+
+            var col = Theme.Rect("col", panel.transform);
+            col.Set(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(460, 300), new Vector2(0, -14));
+            var vlg = col.gameObject.AddComponent<VerticalLayoutGroup>();
+            vlg.spacing = 14; vlg.childControlHeight = vlg.childControlWidth = true;
+            vlg.childForceExpandHeight = vlg.childForceExpandWidth = true;
+
+            Theme.TextButton("Resume", col, "RESUME", Theme.Good, Theme.PanelDark, () => SetPaused(false));
+            Theme.TextButton("Restart", col, "RESTART PROGRAM", Theme.PanelLight, Theme.Ink, () =>
+            {
+                Time.timeScale = 1f;
+                LoadLevel(_def.id);
+            });
+
+            // sound slider
+            var srow = Theme.Raised("Snd", col, Theme.PanelDark);
+            Theme.Label("sl", srow.transform, "SOUND", Theme.Small, Theme.Ink, TextAlignmentOptions.Left)
+                .GetComponent<RectTransform>().Set(new Vector2(0, 0), new Vector2(0.4f, 1), new Vector2(0, 0.5f), Vector2.zero, new Vector2(16, 0));
+            var track = Theme.Panelled("track", srow.transform, Theme.Panel);
+            ((RectTransform)track.transform).Set(new Vector2(0.42f, 0.5f), new Vector2(1, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-24, 16), new Vector2(-12, 0));
+            var sGo = new GameObject("slider", typeof(RectTransform), typeof(Slider));
+            sGo.transform.SetParent(track.transform, false);
+            Theme.Stretch((RectTransform)sGo.transform);
+            var fill = Theme.Panelled("fill", sGo.transform, Theme.Amber);
+            Theme.Stretch((RectTransform)fill.transform);
+            var s = sGo.GetComponent<Slider>();
+            s.minValue = 0; s.maxValue = 1; s.value = SaveSystem.Data.sfxVolume;
+            s.targetGraphic = fill; s.fillRect = (RectTransform)fill.transform;
+            s.onValueChanged.AddListener(v => { SaveSystem.Data.sfxVolume = v; SaveSystem.Data.masterVolume = 1f; SaveSystem.Save(); });
+
+            Theme.TextButton("Quit", col, "QUIT TO CARD VAULT", Theme.PanelLight, Theme.InkDim, () =>
+            {
+                Time.timeScale = 1f;
+                AppState.MenuTarget = _def.isTutorial ? "manual" : "vault";
+                Fade.ToScene("Menu");
+            });
+        }
+
+        private void OnDestroy()
+        {
+            if (_paused) Time.timeScale = 1f;
         }
 
         // ---------------------------------------------------------------- chrome
@@ -183,8 +265,8 @@ namespace PunchcardOperator
             crt.anchorMin = new Vector2(1, 1); crt.anchorMax = new Vector2(1, 1); crt.pivot = new Vector2(1, 1);
             crt.sizeDelta = new Vector2(520, 28); crt.anchoredPosition = new Vector2(-20, -12);
 
-            Theme.TextButton("BackBtn", rail.transform, "‹ VAULT", Theme.PanelLight, Theme.Ink, GoBack)
-                .GetComponent<RectTransform>().Set(new Vector2(1, 0), new Vector2(1, 0), new Vector2(1, 0), new Vector2(180, 44), new Vector2(-20, 10));
+            Theme.TextButton("BackBtn", rail.transform, "PAUSE", Theme.PanelLight, Theme.Ink, () => SetPaused(true))
+                .GetComponent<RectTransform>().Set(new Vector2(1, 0), new Vector2(1, 0), new Vector2(1, 0), new Vector2(170, 44), new Vector2(-20, 10));
 
             // Board area (left ~62%) — recessed machine housing
             _boardArea = Theme.Rect("BoardArea", _root);
@@ -879,7 +961,7 @@ namespace PunchcardOperator
         private void GoMenu()
         {
             Sfx.Play("ui");
-            if (Application.CanStreamedLevelBeLoaded("Menu")) SceneManager.LoadScene("Menu");
+            if (Application.CanStreamedLevelBeLoaded("Menu")) Fade.ToScene("Menu");
             else LoadLevel("00");
         }
 
@@ -907,13 +989,14 @@ namespace PunchcardOperator
         private void LoadLevel(string id)
         {
             AppState.PendingLevelId = id;
-            SceneManager.LoadScene(gameObject.scene.name);
+            Fade.ToScene(gameObject.scene.name);
         }
 
         private void GoBack()
         {
             Sfx.Play("ui");
-            if (Application.CanStreamedLevelBeLoaded("Menu")) SceneManager.LoadScene("Menu");
+            AppState.MenuTarget = _def.isTutorial ? "manual" : "vault";
+            if (Application.CanStreamedLevelBeLoaded("Menu")) Fade.ToScene("Menu");
             else LoadLevel(_def.id);
         }
 

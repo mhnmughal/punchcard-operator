@@ -43,6 +43,8 @@ namespace PunchcardOperator.Tests
         public IEnumerator SetUp()
         {
             SaveSystem.ResetProgress();
+            Fade.Enabled = false;
+            Time.timeScale = 1f;
             yield return null;
         }
 

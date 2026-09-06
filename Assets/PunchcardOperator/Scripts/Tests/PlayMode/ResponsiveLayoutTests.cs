@@ -34,6 +34,8 @@ namespace PunchcardOperator.Tests
             _errors.Clear();
             Application.logMessageReceived += OnLog;
             SaveSystem.ResetProgress();
+            Fade.Enabled = false;
+            Time.timeScale = 1f;
             SaveSystem.Data.tutorialComplete = true;
             SaveSystem.Data.highestUnlockedIndex = 12;
         }
@@ -44,6 +46,8 @@ namespace PunchcardOperator.Tests
             Application.logMessageReceived -= OnLog;
             SetRes(1920, 1080);
             SaveSystem.ResetProgress();
+            Fade.Enabled = false;
+            Time.timeScale = 1f;
         }
 
         private static void SetRes(int w, int h)

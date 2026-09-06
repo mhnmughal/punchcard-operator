@@ -6,6 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/PunchcardOperator/Scenes/Boot.unity
+    guid: 90daf26a3ef28464a87cbf82f98551d8
+  - enabled: 1
     path: Assets/PunchcardOperator/Scenes/Menu.unity
     guid: 1bdbdcb9ac1ed3540942228b10511b2b
   - enabled: 1
