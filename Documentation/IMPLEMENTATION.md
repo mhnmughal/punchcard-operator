@@ -90,19 +90,30 @@ defaults on missing/corrupt file. Nothing networked.
 All 12 campaign solutions are authored in `PunchcardLevelBuilder` and verified by
 the simulator inside `LevelValidator` — current result **13 / 13 VALID**.
 
+## Build & release state
+
+- **Android:** `Build/Android/PunchcardOperator.apk` — IL2CPP ARM64 release,
+  ~35 MB, Build Result: Success. `aapt2` verified: **no permissions** (fully
+  offline). Icon applied across all density buckets. `com.operatorworks.punchcardoperator`
+  (placeholder id), landscape-only, minSdk 24.
+- **Windows:** standalone build succeeds and launches to the Control Room with no
+  exceptions (build smoke test).
+- **iOS:** not built (needs macOS/Xcode).
+- `StripNetworkPermissions` (IPostGenerateGradleAndroidProject) removes the
+  `INTERNET` permission that `com.unity.test-framework.performance` injects.
+
 ## Known limitations / debt
 
-- **Gameplay UI is composed at runtime** under an authored SafeArea root (Theme
-  builders), not authored as prefabs. Functional and safe-area aware; a
-  scene-authored art pass (Control Room 3D environment, Automation Floor,
-  Machine Service/Setup panels as real props) is still pending.
+- **UI is composed at runtime** under an authored SafeArea root (Theme builders),
+  not authored prefabs. Functional, safe-area aware, styled (frames, plates,
+  lamps, channel colour, industrial console). **No modelled 3D environment /
+  props** — the biggest gap vs. a "premium" bar.
 - Coach-light system is functional but coarse (keyword-driven ring placement,
-  advances on the matching action, only hard-gates Execute-before-Punch).
-- No music track; SFX are synthesised tone/noise bursts (deliberate — nothing to
-  licence — but a richer pass is wanted).
-- Build target is currently a mobile platform in the editor but Player Settings
-  (icon, orientation lock, package name, min SDK) are not finalised.
-- No production build has been produced or verified yet.
+  advances on the matching action, hard-gates only Execute-before-Punch).
+- SFX are synthesised (deliberate — zero licence risk); no music track.
+- Per-stage hands-on literal-input QA done for Level 0; stages 01–12 are verified
+  through the automated player-facing playthrough but not a manual tap-by-tap pass.
+- No on-device test (no hardware/emulator available).
 
-See `AUDIT.md` for the item-by-item status and `AGENT_CONTINUITY.md` for the
+See `AUDIT.md` for item-by-item status and `AGENT_CONTINUITY.md` for the
 remaining task list.
