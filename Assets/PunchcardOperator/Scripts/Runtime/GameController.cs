@@ -182,8 +182,11 @@ namespace PunchcardOperator
 
             _coachRing = Theme.Rect("CoachRing", _root);
             var ringImg = _coachRing.gameObject.AddComponent<Image>();
-            ringImg.color = new Color(Theme.Amber.r, Theme.Amber.g, Theme.Amber.b, 0.28f);
+            ringImg.color = new Color(Theme.Amber.r, Theme.Amber.g, Theme.Amber.b, 0.10f);
             ringImg.raycastTarget = false;
+            var ringOutline = _coachRing.gameObject.AddComponent<Outline>();
+            ringOutline.effectColor = Theme.Amber;
+            ringOutline.effectDistance = new Vector2(4, 4);
             _coachRing.gameObject.SetActive(false);
         }
 
@@ -191,24 +194,44 @@ namespace PunchcardOperator
 
         private void RebuildBoard()
         {
+            if (_coachRing != null && _coachRing.IsChildOf(_boardArea))
+            {
+                _coachRing.SetParent(_root, false);
+                _coachRing.gameObject.SetActive(false);
+            }
             foreach (Transform c in _boardArea) Destroy(c.gameObject);
             _cells.Clear();
 
             var g = _def.grid;
             var size = _boardArea.rect.size;
-            _cell = Mathf.Floor(Mathf.Min((size.x - 24) / g.width, (size.y - 24) / g.height));
+            _cell = Mathf.Floor(Mathf.Min((size.x - 60) / g.width, (size.y - 60) / g.height));
             _cell = Mathf.Max(_cell, 24f);
             float boardW = _cell * g.width, boardH = _cell * g.height;
             _boardOrigin = new Vector2(-boardW / 2f, -boardH / 2f);
+
+            // recessed board frame
+            var frame = Theme.Panelled("BoardFrame", _boardArea, Theme.PanelDark);
+            ((RectTransform)frame.transform).Set(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
+                new Vector2(boardW + 28, boardH + 28), Vector2.zero);
+            var fo = frame.gameObject.AddComponent<Outline>();
+            fo.effectColor = new Color32(0x3A, 0x40, 0x4A, 0xFF); fo.effectDistance = new Vector2(2, 2);
 
             for (int y = 0; y < g.height; y++)
             for (int x = 0; x < g.width; x++)
             {
                 var p = new Vector2Int(x, y);
+                bool wall = g.IsWall(p);
                 var img = Theme.Panelled($"Cell_{x}_{y}", _boardArea, CellColor(p));
                 var rt = (RectTransform)img.transform;
-                rt.sizeDelta = new Vector2(_cell - 4, _cell - 4);
+                rt.sizeDelta = new Vector2(_cell - 3, _cell - 3);
                 rt.anchoredPosition = CellPos(p);
+                if (wall)
+                {
+                    var wo = img.gameObject.AddComponent<Outline>();
+                    wo.effectColor = new Color32(0x0C, 0x0E, 0x11, 0xFF); wo.effectDistance = new Vector2(2, -2);
+                    Theme.Label("x", img.transform, "▤", Mathf.Max(12f, _cell * 0.4f), new Color32(0x4A, 0x42, 0x38, 0xFF))
+                        .GetComponent<RectTransform>().Set(Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
+                }
                 _cells[p] = img;
             }
 
@@ -232,14 +255,15 @@ namespace PunchcardOperator
         private void MarkTarget(MachineConfig m, Color c)
         {
             if (_cells.TryGetValue(m.target, out var img))
-                img.color = Color.Lerp(CellColor(m.target), c, 0.5f);
-            var ring = Theme.Panelled("TargetRing", _boardArea, new Color(c.r, c.g, c.b, 0.0f));
+                img.color = Color.Lerp(CellColor(m.target), c, 0.16f);
+            var ring = Theme.Panelled("TargetRing", _boardArea, new Color(c.r, c.g, c.b, 0.06f));
             var outline = ring.gameObject.AddComponent<Outline>();
             outline.effectColor = c; outline.effectDistance = new Vector2(3, 3);
             var rt = (RectTransform)ring.transform;
-            rt.sizeDelta = new Vector2(_cell - 4, _cell - 4);
+            rt.sizeDelta = new Vector2(_cell - 6, _cell - 6);
             rt.anchoredPosition = CellPos(m.target);
-            Theme.Label("T", ring.transform, "TRAY", 14, c).GetComponent<RectTransform>()
+            string tag = _def.DualChannel ? (c == Theme.Blue ? "A" : "B") : "TRAY";
+            Theme.Label("T", ring.transform, tag, Mathf.Max(12f, _cell * 0.26f), c).GetComponent<RectTransform>()
                 .Set(Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
         }
 
@@ -247,9 +271,14 @@ namespace PunchcardOperator
         {
             var img = Theme.Panelled(name, _boardArea, c);
             var rt = (RectTransform)img.transform;
-            rt.sizeDelta = new Vector2(_cell * 0.56f, _cell * 0.56f);
-            Theme.Label(name + "_dir", img.transform, "▲", 22, Theme.PanelDark)
+            rt.sizeDelta = new Vector2(_cell * 0.62f, _cell * 0.62f);
+            var o = img.gameObject.AddComponent<Outline>();
+            o.effectColor = new Color(0, 0, 0, 0.45f); o.effectDistance = new Vector2(2, -3);
+            Theme.Label(name + "_dir", img.transform, "▲", Mathf.Max(16f, _cell * 0.34f), Theme.PanelDark)
                 .GetComponent<RectTransform>().Set(Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
+            if (_def.DualChannel)
+                Theme.Label(name + "_id", img.transform, c == Theme.Blue ? "A" : "B", Mathf.Max(10f, _cell * 0.2f), new Color(0,0,0,0.5f))
+                    .GetComponent<RectTransform>().Set(new Vector2(1,1), new Vector2(1,1), new Vector2(1,1), new Vector2(18,18), new Vector2(-2,-2));
             return rt;
         }
 
@@ -285,7 +314,7 @@ namespace PunchcardOperator
                 var btn = rowImg.gameObject.AddComponent<Button>();
                 btn.onClick.AddListener(() => OnRowTapped(idx));
 
-                var num = Theme.Label("num", rowImg.transform, (i + 1).ToString("00"), 18, Theme.CardEdge, TextAlignmentOptions.Left);
+                var num = Theme.Label("num", rowImg.transform, (i + 1).ToString("00"), 18, new Color32(0x5A, 0x4E, 0x36, 0xFF), TextAlignmentOptions.Left);
                 ((RectTransform)num.transform).Set(new Vector2(0, 0), new Vector2(0, 1), new Vector2(0, 0.5f), new Vector2(46, 0), new Vector2(10, 0));
 
                 var hole = Theme.Panelled("hole", rowImg.transform, Theme.PanelDark);
@@ -314,7 +343,7 @@ namespace PunchcardOperator
                 w.lockGlyph.gameObject.SetActive(row.locked);
                 bool sel = _firstRow == i;
                 Color baseC = _def.DualChannel
-                    ? Color.Lerp(Theme.Card, row.channel == Channel.A ? Theme.Blue : Theme.Amber, 0.22f)
+                    ? Color.Lerp(Theme.Card, row.channel == Channel.A ? Theme.Blue : Theme.Amber, 0.34f)
                     : Theme.Card;
                 if (row.locked) baseC = Color.Lerp(baseC, Theme.PanelLight, 0.35f);
                 w.background.color = sel ? Color.Lerp(baseC, Theme.Good, 0.5f) : baseC;

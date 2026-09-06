@@ -42,15 +42,55 @@ namespace PunchcardOperator
             _controlRoom = Theme.Rect("ControlRoom", _root);
             Theme.Stretch(_controlRoom);
 
-            Theme.Label("Logo", _controlRoom, "PUNCHCARD\nOPERATOR", 84, Theme.Amber)
-                .GetComponent<RectTransform>().Set(new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(900, 240), new Vector2(0, -80));
-            Theme.Label("Tag", _controlRoom, "CONTROL ROOM", 26, Theme.InkDim)
-                .GetComponent<RectTransform>().Set(new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(600, 40), new Vector2(0, -320));
+            // top header plate
+            var header = Theme.Panelled("HeaderPlate", _controlRoom, Theme.Panel);
+            ((RectTransform)header.transform).Set(new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1), new Vector2(0, 150), new Vector2(0, 0));
+            Theme.Label("Logo", header.transform, "PUNCHCARD OPERATOR", 56, Theme.Amber, TextAlignmentOptions.Center)
+                .GetComponent<RectTransform>().Set(new Vector2(0, 0), new Vector2(1, 1), new Vector2(0.5f, 0.5f), new Vector2(-40, -24), new Vector2(0, 8));
+            Theme.Label("Tag", header.transform, "CONTROL ROOM", 20, Theme.InkDim, TextAlignmentOptions.Center)
+                .GetComponent<RectTransform>().Set(new Vector2(0, 0), new Vector2(1, 0), new Vector2(0.5f, 0), new Vector2(-40, 28), new Vector2(0, 14));
+            var rule = Theme.Panelled("Rule", header.transform, Theme.Amber);
+            ((RectTransform)rule.transform).Set(new Vector2(0, 0), new Vector2(1, 0), new Vector2(0.5f, 0), new Vector2(-8, 4), new Vector2(0, 0));
 
+            // left status column — station read-outs
+            var status = Theme.Panelled("StationStatus", _controlRoom, Theme.Panel);
+            ((RectTransform)status.transform).Set(new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(360, 440), new Vector2(28, -20));
+            Theme.Label("sh", status.transform, "STATION STATUS", 20, Theme.Amber, TextAlignmentOptions.TopLeft)
+                .GetComponent<RectTransform>().Set(new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1), new Vector2(-32, 30), new Vector2(0, -14));
+            var lampCol = Theme.Rect("lamps", status.transform);
+            lampCol.Set(new Vector2(0, 0), new Vector2(1, 1), new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
+            lampCol.offsetMin = new Vector2(18, 18); lampCol.offsetMax = new Vector2(-18, -52);
+            var lvlg = lampCol.gameObject.AddComponent<VerticalLayoutGroup>();
+            lvlg.spacing = 10; lvlg.childControlHeight = true; lvlg.childControlWidth = true;
+            lvlg.childForceExpandHeight = true; lvlg.childForceExpandWidth = true;
+            var camp0 = AppState.Database != null ? AppState.Database.Campaign : new List<PunchCardLevelDefinition>();
+            int solved = 0; foreach (var l in camp0) if (ProgressionManager.BestRating(l.id) != LevelRating.None) solved++;
+            Lamp(lampCol, "OPERATOR TRAINING", SaveSystem.Data.tutorialComplete);
+            Lamp(lampCol, "BANK A ONLINE", SaveSystem.Data.tutorialComplete);
+            Lamp(lampCol, "BANK B ONLINE", solved >= 4);
+            Lamp(lampCol, "BANK C ONLINE", solved >= 8);
+            Lamp(lampCol, $"PROGRAMS FILED  {solved} / 12", solved > 0);
+            Lamp(lampCol, "MASTER CERTIFICATION", SaveSystem.Data.systemCertified);
+
+            // center console frame
+            var console = Theme.Panelled("MainConsole", _controlRoom, Theme.PanelDark);
+            ((RectTransform)console.transform).Set(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(560, 300), new Vector2(70, 40));
+            var cbo = console.gameObject.AddComponent<UnityEngine.UI.Outline>();
+            cbo.effectColor = new Color32(0x3A, 0x40, 0x4A, 0xFF); cbo.effectDistance = new Vector2(2, 2);
+            Theme.Label("ct", console.transform, "MAIN MACHINE", 20, Theme.InkDim, TextAlignmentOptions.Top)
+                .GetComponent<RectTransform>().Set(new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1), new Vector2(-20, 28), new Vector2(0, -10));
+            var disc = Theme.Panelled("disc", console.transform, Theme.Panel);
+            ((RectTransform)disc.transform).Set(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(180, 180), new Vector2(0, -6));
+            var dio = disc.gameObject.AddComponent<UnityEngine.UI.Outline>();
+            dio.effectColor = Theme.Amber; dio.effectDistance = new Vector2(3, 3);
+            Theme.Label("dg", disc.transform, "◵", 90, Theme.Amber).GetComponent<RectTransform>()
+                .Set(Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
+
+            // nav buttons — right column
             var col = Theme.Rect("Buttons", _controlRoom);
-            col.Set(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(560, 380), new Vector2(0, -40));
+            col.Set(new Vector2(1, 0.5f), new Vector2(1, 0.5f), new Vector2(1, 0.5f), new Vector2(480, 360), new Vector2(-28, 40));
             var vlg = col.gameObject.AddComponent<VerticalLayoutGroup>();
-            vlg.spacing = 18; vlg.childControlHeight = true; vlg.childControlWidth = true;
+            vlg.spacing = 16; vlg.childControlHeight = true; vlg.childControlWidth = true;
             vlg.childForceExpandHeight = true; vlg.childForceExpandWidth = true;
 
             Theme.TextButton("Enter", col, "ENTER CARD VAULT", Theme.Amber, Theme.PanelDark, () => Show(_vault));
@@ -59,7 +99,7 @@ namespace PunchcardOperator
             Theme.TextButton("Quit", col, "SHUT DOWN", Theme.PanelLight, Theme.InkDim, Quit);
 
             var certPlate = Theme.Panelled("CertPlate", _controlRoom, Theme.PanelDark);
-            ((RectTransform)certPlate.transform).Set(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(520, 56), new Vector2(0, 40));
+            ((RectTransform)certPlate.transform).Set(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(560, 52), new Vector2(0, 20));
             var certLabel = Theme.Label("Cert", certPlate.transform, "MASTER STATUS — SYSTEM CERTIFIED", 22, Theme.Good);
             Theme.Stretch((RectTransform)certLabel.transform);
             var co = certPlate.gameObject.AddComponent<UnityEngine.UI.Outline>();
@@ -69,6 +109,15 @@ namespace PunchcardOperator
         }
 
         private GameObject _certPlate;
+
+        private void Lamp(Transform parent, string label, bool on)
+        {
+            var row = Theme.Panelled($"L_{label}", parent, Theme.PanelDark);
+            var dot = Theme.Panelled("dot", row.transform, on ? Theme.Good : new Color32(0x3A, 0x2A, 0x22, 0xFF));
+            ((RectTransform)dot.transform).Set(new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(16, 16), new Vector2(16, 0));
+            Theme.Label("t", row.transform, label, 17, on ? Theme.Ink : Theme.InkDim, TextAlignmentOptions.Left)
+                .GetComponent<RectTransform>().Set(new Vector2(0, 0), new Vector2(1, 1), new Vector2(0, 0.5f), new Vector2(-52, 0), new Vector2(40, 0));
+        }
 
         private void StartTutorial()
         {
