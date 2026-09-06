@@ -11,12 +11,13 @@ namespace PunchcardOperator.EditorTools
     public static class PunchcardLevelBuilder
     {
         private const string LevelDir = "Assets/PunchcardOperator/Levels";
-        private const string DbPath = "Assets/PunchcardOperator/Levels/LevelDatabase.asset";
+        private const string DbPath = "Assets/PunchcardOperator/Resources/LevelDatabase.asset";
 
         [MenuItem("Punchcard Operator/Rebuild All Levels")]
         public static LevelDatabase RebuildAll()
         {
             Directory.CreateDirectory(LevelDir);
+            Directory.CreateDirectory("Assets/PunchcardOperator/Resources");
 
             var db = AssetDatabase.LoadAssetAtPath<LevelDatabase>(DbPath);
             if (db == null)

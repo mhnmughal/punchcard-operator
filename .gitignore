@@ -9,3 +9,5 @@
 *.csproj
 *.sln
 Assets/AudioProvenance~/
+Assets/Screenshots/
+Assets/Screenshots.meta
