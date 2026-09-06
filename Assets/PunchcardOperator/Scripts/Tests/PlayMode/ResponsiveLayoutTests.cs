@@ -100,6 +100,8 @@ namespace PunchcardOperator.Tests
                 foreach (var g in Object.FindObjectsByType<Graphic>(FindObjectsSortMode.None))
                 {
                     if (!g.isActiveAndEnabled) continue;
+                    // the decorative backdrop drifts and wraps on purpose - not a layout element
+                    if (IsUnder(g.transform, "Backdrop")) continue;
                     var rt = g.rectTransform;
                     var corners = new Vector3[4];
                     rt.GetWorldCorners(corners);
@@ -161,6 +163,13 @@ namespace PunchcardOperator.Tests
             if (cr.yMax > rr.yMin + 2f) sb.AppendLine("  card panel overlaps Status Rail");
             // board and card panel side by side, not overlapping horizontally
             if (br.xMax > cr.xMin + 2f) sb.AppendLine("  board overlaps card panel");
+        }
+
+        private static bool IsUnder(Transform t, string ancestorName)
+        {
+            for (var p = t; p != null; p = p.parent)
+                if (p.name == ancestorName) return true;
+            return false;
         }
 
         private static Vector2 LossyScale(RectTransform rt) =>

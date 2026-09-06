@@ -92,7 +92,7 @@ namespace PunchcardOperator
                 _toast.text = "";
             if (_coachRing != null && _coachRing.gameObject.activeSelf)
             {
-                float s = 1f + 0.06f * Mathf.Sin(Time.unscaledTime * 6f);
+                float s = 1f + 0.035f * Mathf.Sin(Time.unscaledTime * 3.4f);
                 _coachRing.localScale = new Vector3(s, s, 1f);
             }
             var kb = UnityEngine.InputSystem.Keyboard.current;
@@ -327,8 +327,10 @@ namespace PunchcardOperator
             hlg.childForceExpandWidth = true; hlg.childForceExpandHeight = true;
 
             _leverBtn = Theme.TextButton("Lever", dock.transform, "LOAD CARD", Theme.Amber, Theme.PanelDark, OnLever);
-            ((RectTransform)_leverBtn.transform).Set(new Vector2(0.66f, 0), new Vector2(1, 1), new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
-            Theme.Stretch((RectTransform)_leverBtn.transform, 14);
+            var lrt = (RectTransform)_leverBtn.transform;
+            lrt.anchorMin = new Vector2(0.66f, 0); lrt.anchorMax = new Vector2(1, 1);
+            lrt.pivot = new Vector2(0.5f, 0.5f);
+            lrt.offsetMin = new Vector2(4, 16); lrt.offsetMax = new Vector2(-20, -22);
             var knob = Theme.Panelled("knob", _leverBtn.transform, Theme.PanelDark);
             ((RectTransform)knob.transform).Set(new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(40, 14), new Vector2(0, 6));
             knob.raycastTarget = false;
@@ -347,12 +349,26 @@ namespace PunchcardOperator
             _coachBar.SetActive(false);
 
             _coachRing = Theme.Rect("CoachRing", _root);
-            var ringImg = _coachRing.gameObject.AddComponent<Image>();
-            ringImg.color = new Color(Theme.Amber.r, Theme.Amber.g, Theme.Amber.b, 0.04f);
-            ringImg.raycastTarget = false;
-            var ringOutline = _coachRing.gameObject.AddComponent<Outline>();
-            ringOutline.effectColor = Theme.Amber;
-            ringOutline.effectDistance = new Vector2(5, 5);
+            var ringFill = _coachRing.gameObject.AddComponent<Image>();
+            ringFill.sprite = Theme.PanelSprite; ringFill.type = Image.Type.Sliced;
+            ringFill.pixelsPerUnitMultiplier = 2.2f;
+            ringFill.color = new Color(Theme.Amber.r, Theme.Amber.g, Theme.Amber.b, 0.14f);
+            ringFill.raycastTarget = false;
+            // bright amber frame: four bars pinned to the edges (reads clearly on any background)
+            foreach (var (aMin, aMax) in new[] {
+                (new Vector2(0, 1), new Vector2(1, 1)),   // top
+                (new Vector2(0, 0), new Vector2(1, 0)),   // bottom
+                (new Vector2(0, 0), new Vector2(0, 1)),   // left
+                (new Vector2(1, 0), new Vector2(1, 1)) }) // right
+            {
+                var bar = new GameObject("bar", typeof(RectTransform)).AddComponent<Image>();
+                bar.transform.SetParent(_coachRing, false);
+                bar.color = Theme.Amber; bar.raycastTarget = false;
+                var brt = (RectTransform)bar.transform;
+                brt.anchorMin = aMin; brt.anchorMax = aMax;
+                brt.sizeDelta = new Vector2(aMin.x == aMax.x ? 5 : 0, aMin.y == aMax.y ? 5 : 0);
+                brt.anchoredPosition = Vector2.zero;
+            }
             _coachRing.gameObject.SetActive(false);
         }
 
@@ -815,6 +831,8 @@ namespace PunchcardOperator
         private void ShowResult(ExecutionResult result)
         {
             _phase = Phase.Result;
+            if (_coachBar != null) _coachBar.SetActive(false);
+            if (_coachRing != null) _coachRing.gameObject.SetActive(false);
             if (_overlay != null) Destroy(_overlay.gameObject);
             var dim = Theme.Panelled("ResultOverlay", _root, new Color(0, 0, 0, 0.72f));
             _overlay = (RectTransform)dim.transform;
@@ -1033,14 +1051,22 @@ namespace PunchcardOperator
             string s = stepText.ToUpper();
             RectTransform target = null;
             if (s.Contains("PUNCH") && s.Contains("TOOL")) target = FindTool(CardTool.Punch);
-            else if (s.Contains("PATCH")) target = FindTool(CardTool.Patch);
-            else if (s.Contains("EXECUTE") || s.Contains("LEVER")) target = (RectTransform)_leverBtn.transform;
-            else if (s.Contains("DROP THE CARD") || s.Contains("READER SLOT") || s.Contains("LOAD")) target = (RectTransform)_leverBtn.transform;
-            else if (s.Contains("PUNCH CARD") || s.Contains("ROW")) target = _cardList;
+            else if (s.Contains("PATCH") && s.Contains("TOOL")) target = FindTool(CardTool.Patch);
+            else if (s.Contains("EXECUTE") || s.Contains("LEVER") || s.Contains("READER SLOT")
+                     || (s.Contains("LOAD") && s.Contains("CARD"))) target = (RectTransform)_leverBtn.transform;
+            else if (s.Contains("ROW"))
+            {
+                // "row N" (1-indexed) -> Row(N-1); fall back to the whole card
+                int n = ParseRowNumber(s);
+                target = (n >= 0 ? _cardList.Find($"Row{n}") as RectTransform : null) ?? _cardList;
+            }
+            else if (s.Contains("CARD")) target = _cardList;
             else if (s.Contains("BOARD") || s.Contains("CARRIER") || s.Contains("TRAY")) target = _boardArea;
 
             if (target == null) { _coachRing.gameObject.SetActive(false); return; }
             _coachRing.gameObject.SetActive(true);
+            var le = _coachRing.GetComponent<LayoutElement>() ?? _coachRing.gameObject.AddComponent<LayoutElement>();
+            le.ignoreLayout = true;   // never disturb a target that is a layout group
             _coachRing.SetParent(target, false);
             _coachRing.anchorMin = Vector2.zero; _coachRing.anchorMax = Vector2.one;
             _coachRing.offsetMin = new Vector2(-8, -8); _coachRing.offsetMax = new Vector2(8, 8);
@@ -1051,6 +1077,13 @@ namespace PunchcardOperator
         {
             var tr = _toolRow.Find($"Tool_{t}");
             return tr as RectTransform;
+        }
+
+        private static int ParseRowNumber(string upper)
+        {
+            int i = upper.IndexOf("ROW ", System.StringComparison.Ordinal);
+            if (i < 0 || i + 4 >= upper.Length) return -1;
+            return char.IsDigit(upper[i + 4]) ? (upper[i + 4] - '0') - 1 : -1;
         }
     }
 

@@ -28,14 +28,13 @@ check not performed in this environment.
 |------|--------|-------|
 | Startup | PASS | `Boot.unity` - machine power-on (logo + lamp cascade + SYSTEM READY), tap-to-skip; first launch → Operator Training, otherwise Control Room |
 | Control Room | PASS | bolted station panels, live Station-Status lamps, rotating machine disc, master-status plate, nav column |
-| Card Vault | PASS | filing cassettes with spine labels + amber edge - not a level grid; per-slot rating text, lock states |
+| Card Vault | PASS | bank cassettes with code labels; per-slot number + name, rating pips, lock icons, completed-slot tint |
 | Automation Floor (gameplay) | PASS (styled) | recessed bolted housing, CARD READER head + slot, PWR / RDR / RUN indicator lamps that respond to state, animated punch head that drops onto the punched row, bolted Tool Dock with a lever knob |
 | Status Rail | PASS | program id, objective, edits + PERFECT / COMPACT targets, indicator lamps |
 | Tool Dock | PASS | per-tool idle / selected / pressed, two-step selection, op picker, reject toasts |
 | Pause | PASS | PAUSE button / Escape / auto-pause on app focus loss → Resume / Restart Program / Sound / Quit to Vault, with `Time.timeScale` handling |
-| Machine Setup (settings) | PASS | Master + SFX sliders (persisted), Reset Progress with confirmation |
-| Operations Manual | PASS | rules reference (the machine + the six tools) + Replay Training + Credits |
-| Credits | PASS | dedicated screen |
+| Settings | PASS | Master + SFX sliders (persisted), Reset Progress with confirmation |
+| How To Play | PASS | two-panel rules reference (the machine + the tools) + Replay Training |
 | Success / Failure | PASS | plain-language failure reason + RETRY; rated success + REPLAY / NEXT |
 | Transitions & feel | PASS | persistent fade on every scene change, cross-fade between menu views, `ButtonFX` press scale-dip + click on every button |
 | Responsive UI | PASS | `ResponsiveLayoutTests` - Menu + Game at 20:9 / 19.5:9 / 16:9 / 4:3 / 1334×750: nothing off-screen, tap targets ≥ 30 px, bands never overlap, console clean |

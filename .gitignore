@@ -15,3 +15,6 @@ Build/
 .utmp/
 Assets/Resources/PerformanceTest*
 Assets/Resources/PerformanceTest*.meta
+
+# Unity Test Framework temp scene
+Assets/InitTestScene*

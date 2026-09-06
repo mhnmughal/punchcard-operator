@@ -112,21 +112,14 @@ namespace PunchcardOperator.EditorTools
                 Card(Row(MOVE), Row(E, locked: false), Row(E, locked: false)),
                 Card(Row(MOVE), Row(MOVE), Row(E)),
                 1, 1, 1, PunchPatch,
-                "The carrier must climb from the loading dock to the output tray directly above it.",
+                "Get the carrier onto the lit tray, two steps up.",
                 new[]
                 {
-                    "This is the automation board. The carrier sits at the bottom.",
-                    "The output tray is the lit cell two rows up. That is the machine objective.",
-                    "This is your punch card. Each row is one instruction the reader will run.",
-                    "Row 1 is punched MOVE. Row 2 is blank - the reader will skip it.",
-                    "The carrier needs TWO moves, so row 2 is the missing instruction.",
-                    "Tap the PUNCH tool on the Tool Dock.",
-                    "Punch MOVE into row 2.",
-                    "Punched the wrong hole? Tap PATCH to clear a row and try again.",
-                    "Drop the card into the reader slot.",
-                    "Pull the EXECUTE lever.",
-                    "Watch the reader step down the rows and light each instruction as it runs.",
-                    "The carrier reaches the tray. TRAINING COMPLETE.",
+                    "This card is missing a step. Tap the PUNCH tool to cut a new one.",
+                    "Tap the blank row 2 on the card, then pick MOVE.",
+                    "The card is ready. Tap LOAD CARD to feed it into the reader.",
+                    "Now pull EXECUTE to run the program.",
+                    "The carrier steps up onto the lit tray. That is the whole game.",
                 }));
 
             // BANK A - BASIC CONTROL ----------------------------------------------

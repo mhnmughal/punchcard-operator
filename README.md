@@ -55,7 +55,7 @@ Assets/PunchcardOperator/
     SaveSystem.cs            offline JSON save + progression
     LevelValidator.cs        13/13 campaign validation
     GameController.cs         the stage loop
-    MenuController.cs         Control Room / Card Vault / Machine Setup / Manual / Credits
+    MenuController.cs         Control Room / Card Vault / Settings / How To Play
     BootController.cs · Fade.cs · Sfx.cs · SafeAreaPanel.cs · AppShell.cs
   Scripts/Editor/          PunchcardLevelBuilder, IconGenerator, build post-processors
   Scripts/Tests/           EditMode (PunchcardOperator.Tests)

@@ -93,7 +93,7 @@ the simulator inside `LevelValidator` - current result **13 / 13 VALID**.
 ## Screen flow
 
 `Boot` (power-on, first-launch routing) → `Menu` (Control Room hub · Card Vault ·
-Machine Setup · Operations Manual · Credits, cross-faded) → `Game` (the stage
+Settings · How To Play, cross-faded) → `Game` (the stage
 loop: brief → edit → load → execute → score → finale). Every scene change
 fades through black. In-game: PAUSE (Status Rail / Escape / app-focus) →
 Resume / Restart / Sound / Quit.

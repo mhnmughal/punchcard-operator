@@ -16,7 +16,7 @@ No obsolete 42-level content anywhere (green-field build).
 | Levels | all 13 authored in `PunchcardLevelBuilder` (menu: *Punchcard Operator/Rebuild All Levels*); `LevelValidator` → **13/13 VALID** |
 | Tests | EditMode **29/29**, PlayMode **19/19** - every commit |
 | Scenes | `Boot` → `Menu` → `Game` (build order). Boot = power-on + first-launch routing. |
-| UI/UX | boot sequence, persistent fades, menu cross-fades, `ButtonFX` press feel, pause menu (+ Escape + app-focus auto-pause), Operations Manual (rules), Credits, cassette Card Vault, machine-console Game screen (bolts, card reader, PWR/RDR/RUN lamps, animated punch head), System Certified finale |
+| UI/UX | procedural sprite skin (rounded 9-slice panels/buttons, bevel, glow, gears), animated card-mote backdrop, `ButtonFX` hover/press, boot sequence, persistent fades, menu cross-fades, pause menu (+ Escape + app-focus auto-pause), How To Play, bank-cassette Card Vault, machine-console Game screen (card reader, PWR/RDR/RUN lamps, animated punch head), simplified 5-step Operator Training with highlight ring, System Certified finale |
 | Audio | `Sfx` - synthesised, pooled, pitch-drifted, layered. No external files. |
 | Icon | `IconGenerator` - 4× supersampled procedural punch card + amber press |
 | Builds | **Android APK** (IL2CPP ARM64, ~30 MB, offline-verified) · **Windows** (launches clean) · **iOS Xcode project** (generated + audited; `.ipa` needs macOS) |
