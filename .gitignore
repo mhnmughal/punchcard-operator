@@ -13,3 +13,5 @@ Assets/Screenshots/
 Assets/Screenshots.meta
 Build/
 .utmp/
+Assets/Resources/PerformanceTest*
+Assets/Resources/PerformanceTest*.meta
