@@ -11,7 +11,7 @@ therefore nothing to licence and no third-party attribution requirement.
 
 | Cue | Source | Licence | Attribution | Modified |
 |-----|--------|---------|-------------|----------|
-| punch, chad, patch, shift, swap, flip, copy, load, reader, step, turn, execute, ui, error, success, certified | Generated in-engine by `Sfx.Bake()` (original DSP, this project) | Original work — project-owned | None required | n/a (generated) |
+| punch, chad, patch, shift, swap, flip, copy, load, reader, step, turn, execute, ui, error, success, certified | Generated in-engine by `Sfx.Bake()` (original DSP, this project) | Original work - project-owned | None required | n/a (generated) |
 
 ## If external audio is added later
 

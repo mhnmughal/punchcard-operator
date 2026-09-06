@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace PunchcardOperator
 {
-    /// <summary>Procedurally synthesised interaction sounds — mechanical transients
+    /// <summary>Procedurally synthesised interaction sounds - mechanical transients
     /// generated at startup. No external audio files, so nothing to licence.
     /// A small AudioSource pool lets reader ticks, steps and turns overlap without
     /// cutting each other; each cue gets a little random pitch drift so repeated

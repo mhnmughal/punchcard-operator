@@ -1,4 +1,4 @@
-# Punchcard Operator — Implementation Summary
+# Punchcard Operator - Implementation Summary
 
 _Last updated: 2026-09-06_
 
@@ -8,10 +8,10 @@ carrier crosses a grid toward its output tray.
 
 ## Scope (authoritative)
 
-**13 playable stages total: Level 0 (Operator Training) + Levels 01–12.**
+**13 playable stages total: Level 0 (Operator Training) + Levels 01-12.**
 The older 42-level / 7-chapter / "Level 1 is the tutorial" / "Level 42 finale"
 material is obsolete and is not present anywhere in this project (it was a
-green-field build — there was nothing to migrate).
+green-field build - there was nothing to migrate).
 
 ## Architecture
 
@@ -30,7 +30,7 @@ Assets/PunchcardOperator/
     GameController.cs         the stage loop (build floor + card, edit, execute, score)
     MenuController.cs         Control Room / Card Vault / Machine Setup
   Scripts/Editor/    PunchcardOperator.Editor.asmdef
-    PunchcardLevelBuilder.cs  "Punchcard Operator/Rebuild All Levels" — regenerates
+    PunchcardLevelBuilder.cs  "Punchcard Operator/Rebuild All Levels" - regenerates
                               all 13 level assets from code and runs the validator
   Scripts/Tests/     PunchcardOperator.Tests.asmdef  (EditMode, 26 tests)
     PunchcardTests.cs
@@ -43,7 +43,7 @@ Assets/PunchcardOperator/
 
 - Grid with walls. Carrier has position + facing (N/E/S/W).
 - Ops: `Move` (step forward), `TurnLeft`, `TurnRight`, `Repeat` (re-runs that
-  channel's previous op N times — N is stored on the row and shown to the player),
+  channel's previous op N times - N is stored on the row and shown to the player),
   `Empty` (skipped).
 - `PunchCard.flipped` reverses execution order (Level 07 mechanic).
 - Dual channel: rows are tagged Channel A / B, each drives its own carrier; both
@@ -69,26 +69,26 @@ Tutorial gates Level 01. Then strictly sequential 01→12. Completing 12 sets
 `systemCertified`. JSON at `Application.persistentDataPath`, atomic write, safe
 defaults on missing/corrupt file. Nothing networked.
 
-## Level design — why each stage exists
+## Level design - why each stage exists
 
 | ID | Name | Bank | Introduces / tests |
 |----|------|------|--------------------|
-| 00 | Operator Training | — | the full loop, hands-on, coach-lit |
+| 00 | Operator Training | - | the full loop, hands-on, coach-lit |
 | 01 | First Program | A | Move + one missing turn on an L route |
 | 02 | Turn Table | A | multi-move sequencing, two gaps, no handholding |
-| 03 | Bad Hole | A | Patch — one wrongly punched turn drives off the board |
+| 03 | Bad Hole | A | Patch - one wrongly punched turn drives off the board |
 | 04 | Control Check | A | Punch + Patch together; first real mastery check |
-| 05 | Shift Line | B | Shift — right instruction, one row too early |
-| 06 | Cross Wire | B | Swap — two turns wired in the wrong order |
-| 07 | Reverse Feed | B | Flip — card punched back-to-front |
-| 08 | Compact Program | B | optimisation — shift+patch (2) beats 3 patches |
-| 09 | Copy Cycle | C | Copy — fill a tight card from one MOVE, no Punch tool |
-| 10 | Repeat Loop | C | Repeat — set the visible dial so the carrier stops on the tray |
+| 05 | Shift Line | B | Shift - right instruction, one row too early |
+| 06 | Cross Wire | B | Swap - two turns wired in the wrong order |
+| 07 | Reverse Feed | B | Flip - card punched back-to-front |
+| 08 | Compact Program | B | optimisation - shift+patch (2) beats 3 patches |
+| 09 | Copy Cycle | C | Copy - fill a tight card from one MOVE, no Punch tool |
+| 10 | Repeat Loop | C | Repeat - set the visible dial so the carrier stops on the tray |
 | 11 | Dual Channel | C | one card, Machine A + Machine B, both must park |
 | 12 | Master Program | C | dual channel + Repeat + a Swap; culmination |
 
 All 12 campaign solutions are authored in `PunchcardLevelBuilder` and verified by
-the simulator inside `LevelValidator` — current result **13 / 13 VALID**.
+the simulator inside `LevelValidator` - current result **13 / 13 VALID**.
 
 ## Screen flow
 
@@ -100,7 +100,7 @@ Resume / Restart / Sound / Quit.
 
 ## Build & release state
 
-- **Android:** `Build/Android/PunchcardOperator.apk` — IL2CPP ARM64 release,
+- **Android:** `Build/Android/PunchcardOperator.apk` - IL2CPP ARM64 release,
   ~30 MB, Build Result: Success. `aapt2` verified: **no permissions**. Icon on
   every density bucket. `com.operatorworks.punchcardoperator` (placeholder id),
   landscape, minSdk 24, Medium stripping + `link.xml`.
@@ -115,15 +115,15 @@ Resume / Restart / Sound / Quit.
 ## Known limitations / debt
 
 - **UI is composed at runtime** from `Theme` builders under a `SafeAreaPanel`
-  root — styled as a machine console (bolted panels, card reader, indicator
+  root - styled as a machine console (bolted panels, card reader, indicator
   lamps, animated punch head, boot power-on, cassette vault) but still 2D UI,
   not a modelled 3D scene with camera + lighting.
 - Coach-light system is functional but coarse (keyword-driven ring placement,
   advances on the matching action, hard-gates only Execute-before-Punch).
-- SFX are synthesised (deliberate — zero licence risk); no music track.
+- SFX are synthesised (deliberate - zero licence risk); no music track.
 - On-device test descoped by the owner; iOS `.ipa` needs macOS/Xcode.
 - `GameCenter` / `Multiplayer` engine stubs remain in the iOS IL2CPP output
-  (Unity always ships them) but are inert — no GameKit framework, no call sites.
+  (Unity always ships them) but are inert - no GameKit framework, no call sites.
 
 See `AUDIT.md` for item-by-item status and `AGENT_CONTINUITY.md` for the
 remaining task list.

@@ -17,11 +17,11 @@ _Last updated: 2026-09-06_
 | Test | Covers |
 |------|--------|
 | `CampaignPlaythroughTests.EveryStage_SolvesThroughTheGameScene` | loads all 13 stages, applies each solution through the real edit API, Load+Execute, asserts success/rating/persistence/unlock, `systemCertified` after 12 |
-| `PerStageInputTests.EveryCampaignStage_PlayableByClicking` ×12 | stages 01–12, driven by **literal `Button.onClick`** — tool buttons, card-row buttons, op-picker buttons, Load/Execute lever. Per stage: unsolved card halts with a reason + working RETRY; an illegal edit is rejected with a toast and costs 0; the stage solves by clicking at the intended edit count; it wins and scores PERFECT |
-| `ResponsiveLayoutTests` ×2 | Menu + Game (levels 04, 11) at 20:9 / 19.5:9 / 16:9 / 4:3 / 1334×750 — nothing off-screen, tap targets ≥ 30 px, the Status Rail / board / card / Tool Dock bands never overlap, console clean |
+| `PerStageInputTests.EveryCampaignStage_PlayableByClicking` ×12 | stages 01-12, driven by **literal `Button.onClick`** - tool buttons, card-row buttons, op-picker buttons, Load/Execute lever. Per stage: unsolved card halts with a reason + working RETRY; an illegal edit is rejected with a toast and costs 0; the stage solves by clicking at the intended edit count; it wins and scores PERFECT |
+| `ResponsiveLayoutTests` ×2 | Menu + Game (levels 04, 11) at 20:9 / 19.5:9 / 16:9 / 4:3 / 1334×750 - nothing off-screen, tap targets ≥ 30 px, the Status Rail / board / card / Tool Dock bands never overlap, console clean |
 | `PerformanceProbeTests` | GC-allocation probe on the editing screen + execute animation vs. an editor baseline |
 
-## Manual — in-editor Play mode (hands-on)
+## Manual - in-editor Play mode (hands-on)
 
 | Check | Result |
 |-------|--------|
@@ -32,8 +32,8 @@ _Last updated: 2026-09-06_
 
 ## Per-stage QA matrix
 
-`QA_MATRIX.md` — one row per stage. **13 / 13** stages now verified through the
-player-facing UI (Level 0 hands-on; 01–12 via the per-stage literal-click test
+`QA_MATRIX.md` - one row per stage. **13 / 13** stages now verified through the
+player-facing UI (Level 0 hands-on; 01-12 via the per-stage literal-click test
 which also checks the failure state and illegal-edit rejection per stage).
 
 ## Performance
@@ -46,7 +46,7 @@ idle editing screen:                          ~249 KB/frame  (delta -13 KB)
 execute animation:                            ~248 KB/frame  (delta -14 KB)
 ```
 
-The game adds **no measurable per-frame GC allocation** over the editor baseline —
+The game adds **no measurable per-frame GC allocation** over the editor baseline -
 `GameController.Update`, the execute coroutine and the tween helpers are
 allocation-free. The ~262 KB baseline is editor + MCP-bridge churn that does not
 exist in a player build. Editor frame times are not device-representative and are
@@ -55,9 +55,9 @@ hitch) is clean.
 
 ## Not verified
 
-- **Authored 3D environment** — Control Room / Automation Floor are styled UI,
+- **Authored 3D environment** - Control Room / Automation Floor are styled UI,
   not modelled machinery. Functionally complete; art depth is the open item.
-- **On-device run** — descoped by the project owner.
-- **iOS build** — needs macOS/Xcode; Android is the verified mobile target.
+- **On-device run** - descoped by the project owner.
+- **iOS build** - needs macOS/Xcode; Android is the verified mobile target.
 - Device-level safe-area rendering (the anchor math is unit-tested; not seen on
   a physical notched screen).

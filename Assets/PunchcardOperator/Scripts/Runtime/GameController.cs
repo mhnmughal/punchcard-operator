@@ -251,7 +251,7 @@ namespace PunchcardOperator
             _lampRun = Lamp(rail.transform, "RUN", -114);
             _lampPower.color = Theme.Good; // powered on
 
-            var title = Theme.Label("Title", rail.transform, $"PROGRAM {_def.id}  —  {_def.displayName}", 30, Theme.Amber, TextAlignmentOptions.TopLeft);
+            var title = Theme.Label("Title", rail.transform, $"PROGRAM {_def.id}  -  {_def.displayName}", 30, Theme.Amber, TextAlignmentOptions.TopLeft);
             var trt = (RectTransform)title.transform;
             trt.anchorMin = new Vector2(0, 1); trt.anchorMax = new Vector2(1, 1); trt.pivot = new Vector2(0.5f, 1f);
             trt.sizeDelta = new Vector2(-40, 40); trt.anchoredPosition = new Vector2(20, -12);
@@ -268,7 +268,7 @@ namespace PunchcardOperator
             Theme.TextButton("BackBtn", rail.transform, "PAUSE", Theme.PanelLight, Theme.Ink, () => SetPaused(true))
                 .GetComponent<RectTransform>().Set(new Vector2(1, 0), new Vector2(1, 0), new Vector2(1, 0), new Vector2(170, 44), new Vector2(-20, 10));
 
-            // Board area (left ~62%) — recessed machine housing
+            // Board area (left ~62%) - recessed machine housing
             _boardArea = Theme.Rect("BoardArea", _root);
             _boardArea.anchorMin = new Vector2(0, 0); _boardArea.anchorMax = new Vector2(0.62f, 1);
             _boardArea.offsetMin = new Vector2(20, 190); _boardArea.offsetMax = new Vector2(-10, -150);
@@ -279,7 +279,7 @@ namespace PunchcardOperator
             Theme.Label("FloorTag", _boardArea, "AUTOMATION FLOOR", 14, Theme.InkDim, TextAlignmentOptions.BottomLeft)
                 .GetComponent<RectTransform>().Set(new Vector2(0, 0), new Vector2(1, 0), new Vector2(0, 0), new Vector2(-24, 20), new Vector2(16, 8));
 
-            // Card panel (right) — the card reader
+            // Card panel (right) - the card reader
             var cardPanel = Theme.Panelled("CardPanel", _root, Theme.PanelLight);
             var cprt = (RectTransform)cardPanel.transform;
             cprt.anchorMin = new Vector2(0.62f, 0); cprt.anchorMax = new Vector2(1, 1);
@@ -294,7 +294,7 @@ namespace PunchcardOperator
             var slotMouth = Theme.Panelled("slot", readerHead.transform, new Color32(0x0C, 0x0E, 0x11, 0xFF));
             ((RectTransform)slotMouth.transform).Set(new Vector2(0, 0), new Vector2(1, 0), new Vector2(0.5f, 0), new Vector2(-24, 6), new Vector2(0, 0));
 
-            // punch-head assembly — drops onto a row when you punch
+            // punch-head assembly - drops onto a row when you punch
             _punchHead = Theme.Rect("PunchHead", cardPanel.transform);
             _punchHead.Set(new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(46, 120), new Vector2(0, 40));
             var phBar = _punchHead.gameObject.AddComponent<Image>(); phBar.color = Theme.Amber; phBar.raycastTarget = false;
@@ -309,7 +309,7 @@ namespace PunchcardOperator
             vlg.spacing = 6; vlg.childControlHeight = true; vlg.childControlWidth = true;
             vlg.childForceExpandHeight = true; vlg.childForceExpandWidth = true;
 
-            // Tool Dock (bottom) — physical dock
+            // Tool Dock (bottom) - physical dock
             var dock = Theme.Panelled("ToolDock", _root, Theme.Panel);
             Raise(dock);
             Bolts(dock.transform, 12f);
@@ -532,7 +532,7 @@ namespace PunchcardOperator
                 case CardOp.TurnLeft: return "LEFT";
                 case CardOp.TurnRight: return "RIGHT";
                 case CardOp.Repeat: return $"REPEAT ×{r.repeatCount}";
-                default: return "—";
+                default: return "-";
             }
         }
 
@@ -556,7 +556,7 @@ namespace PunchcardOperator
             if (_phase != Phase.Editing) return;
             _tool = t; _hasTool = true; _firstRow = -1;
             Sfx.Play("ui");
-            Toast($"{t.ToString().ToUpper()} SELECTED — tap a card row");
+            Toast($"{t.ToString().ToUpper()} SELECTED - tap a card row");
             RefreshToolVisuals();
             RefreshCardVisuals();
             if (_def.isTutorial && t == CardTool.Punch) TryAdvanceCoachByKeyword("PUNCH TOOL");
@@ -584,7 +584,7 @@ namespace PunchcardOperator
                 case CardTool.Flip:
                     _session.Flip(out _);
                     Sfx.Play("flip");
-                    Toast(_session.Card.flipped ? "CARD FLIPPED — reader runs bottom to top" : "CARD BACK TO NORMAL");
+                    Toast(_session.Card.flipped ? "CARD FLIPPED - reader runs bottom to top" : "CARD BACK TO NORMAL");
                     AfterEdit();
                     break;
                 case CardTool.Punch:
@@ -845,7 +845,7 @@ namespace PunchcardOperator
                     var next = NextLevelId();
                     if (next == null)
                     {
-                        // Level 12 — the campaign finale
+                        // Level 12 - the campaign finale
                         Destroy(_overlay.gameObject);
                         _overlay = null;
                         StartCoroutine(CertifiedFinale(rating));
@@ -883,7 +883,7 @@ namespace PunchcardOperator
             dim.gameObject.AddComponent<Button>();
             yield return Tween(0.6f, t => dim.color = new Color(0.02f, 0.03f, 0.04f, 0.92f * t));
 
-            // main indicator tower — a column of lamps that light bottom-up
+            // main indicator tower - a column of lamps that light bottom-up
             var tower = Theme.Rect("Tower", drt);
             tower.Set(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(120, 300), new Vector2(0, 40));
             var lamps = new Image[5];
@@ -945,7 +945,7 @@ namespace PunchcardOperator
             // master status plate
             var master = Theme.Panelled("MasterPlate", drt, Theme.PanelDark);
             ((RectTransform)master.transform).Set(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(560, 96), new Vector2(0, -110));
-            var mlab = Theme.Label("ml", master.transform, $"MASTER PROGRAM — {RatingRules.Label(rating)}", 26, Theme.InkDim);
+            var mlab = Theme.Label("ml", master.transform, $"MASTER PROGRAM - {RatingRules.Label(rating)}", 26, Theme.InkDim);
             Theme.Stretch((RectTransform)mlab.transform);
             var mo = master.gameObject.AddComponent<Outline>(); mo.effectColor = Theme.Good; mo.effectDistance = new Vector2(2, 2);
             Sfx.Play("certified", 0.8f);

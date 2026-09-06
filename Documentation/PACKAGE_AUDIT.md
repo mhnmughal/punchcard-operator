@@ -1,11 +1,11 @@
 # Package & Third-Party Audit
 
-_Last updated: 2026-09-06 — Unity 6000.3.19f1_
+_Last updated: 2026-09-06 - Unity 6000.3.19f1_
 
 ## Full dependency manifest (`Packages/manifest.json`)
 
 ```
-com.anklebreaker.unity-mcp        (git)   editor-only build tool — see below
+com.anklebreaker.unity-mcp        (git)   editor-only build tool - see below
 com.unity.ide.rider / visualstudio        editor-only IDE integration
 com.unity.inputsystem            1.19.0   UI pointer / touch / Escape key
 com.unity.render-pipelines.universal 17.3  renderer (standard UniversalRenderer)
@@ -16,7 +16,7 @@ com.unity.modules.{accessibility, animation, audio, imageconversion, imgui,
 ```
 
 `packages-lock.json` after resolve pulls back only `physics`, `terrain` and
-`hierarchycore` as **URP / UGUI transitive dependencies** — not requestable to
+`hierarchycore` as **URP / UGUI transitive dependencies** - not requestable to
 remove without removing URP itself.
 
 ## Removed during cleanup (verified gone from `packages-lock.json`)
@@ -41,24 +41,24 @@ remove without removing URP itself.
 Editor tooling used to build this project. **Not compiled into any player:**
 both the Android APK and the iOS Xcode project are IL2CPP builds and their
 `Il2CppOutputProject` contains only `PunchcardOperator.Runtime` from this
-project's code — no `.Editor`, no `.Tests`, no `Anklebreaker`/`MCP` assembly.
+project's code - no `.Editor`, no `.Tests`, no `Anklebreaker`/`MCP` assembly.
 Left in the manifest per the project owner's instruction to skip it; a one-line
 removal produces a pristine release checkout with zero behaviour change.
 
-## Prohibited categories — status
+## Prohibited categories - status
 
 | Category | Present? |
 |----------|----------|
-| Ad SDKs / Analytics SDKs / active Unity Analytics | **No** — modules stripped; no `UnityEngine.Analytics` call sites |
+| Ad SDKs / Analytics SDKs / active Unity Analytics | **No** - modules stripped; no `UnityEngine.Analytics` call sites |
 | Remote config / cloud save / login / social SDKs | **No** |
 | Crash-reporting services | **No** |
 | `Assets/Plugins/` native plugins | **None** (folder does not exist) |
-| Runtime network calls in game code | **None** — `grep` of `Assets/PunchcardOperator/Scripts` is clean |
-| Reflection / `Process` / `DllImport` / `Application.OpenURL` / `PlayerPrefs` in game code | **None** — only `Resources.Load`, `Application.Quit`, one save file under `persistentDataPath` |
+| Runtime network calls in game code | **None** - `grep` of `Assets/PunchcardOperator/Scripts` is clean |
+| Reflection / `Process` / `DllImport` / `Application.OpenURL` / `PlayerPrefs` in game code | **None** - only `Resources.Load`, `Application.Quit`, one save file under `persistentDataPath` |
 
 ## Android APK (`aapt2`, IL2CPP ARM64 release)
 
-- `uses-permission`: **none** — only the self-scoped, non-network AndroidX
+- `uses-permission`: **none** - only the self-scoped, non-network AndroidX
   `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`
 - package `com.operatorworks.punchcardoperator`, versionName 1.0.0, versionCode 1
 - `native-code: arm64-v8a`, icon across all 6 density buckets
@@ -74,7 +74,7 @@ removal produces a pristine release checkout with zero behaviour change.
   core, but **no `GameKit.framework` is linked** → inert, cannot function.
 - Frameworks: AVFoundation (audio session), AudioToolbox, CoreGraphics/Media/
   Text/Video, Foundation, GameController (Input System), Metal, QuartzCore,
-  UIKit — plus **Security + SystemConfiguration**, which `UnityFramework` links
+  UIKit - plus **Security + SystemConfiguration**, which `UnityFramework` links
   by default (engine references `SCNetworkReachability` / keychain APIs the game
   never calls). **AVKit removed** by `IosBuildPostprocess`.
 - `Info.plist`: no permission usage descriptions, no `NSAppTransportSecurity`,

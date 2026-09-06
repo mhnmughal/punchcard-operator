@@ -3,13 +3,13 @@
 _Last updated: 2026-09-06_
 
 Verification method:
-- **AP** — automated playthrough (`CampaignPlaythroughTests`) — real Game-scene
+- **AP** - automated playthrough (`CampaignPlaythroughTests`) - real Game-scene
   flow, solution applied through the `CardEditSession` API, run every commit.
-- **CL** — per-stage literal-click test (`PerStageInputTests`) — drives the stage
+- **CL** - per-stage literal-click test (`PerStageInputTests`) - drives the stage
   through actual `Button.onClick`: tool buttons, card-row buttons, op-picker
   buttons, Load/Execute lever. Also checks the failure state and illegal-edit
   rejection per stage. Run every commit.
-- **HS** — hands-on in the editor.
+- **HS** - hands-on in the editor.
 
 | Stage | Load | UI built | Illegal edit rejected | Failure state | Valid solution | Execute | Success | Rating | Save | Unlock | Replay | By |
 |-------|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|----|
@@ -39,6 +39,6 @@ Per stage, `PerStageInputTests` explicitly:
 
 ## Remaining
 
-- Physical-device play — descoped by the project owner.
+- Physical-device play - descoped by the project owner.
 - Long-form human playtesting for feel / difficulty tuning (subjective, not a
-  pass/fail gate) — recommended before store submission.
+  pass/fail gate) - recommended before store submission.

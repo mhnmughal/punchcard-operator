@@ -110,7 +110,7 @@ namespace PunchcardOperator.Tests
                     // fully off screen?
                     if (r.xMax < 1f || r.xMin > w - 1f || r.yMax < 1f || r.yMin > h - 1f)
                     {
-                        // small transient labels (Toast/coach) start empty & off — ignore empty text
+                        // small transient labels (Toast/coach) start empty & off - ignore empty text
                         var t = g as TMP_Text;
                         if (t != null && string.IsNullOrWhiteSpace(t.text)) continue;
                         sb.AppendLine($"  OFF-SCREEN: {Path(g.transform)}  rect={r}");

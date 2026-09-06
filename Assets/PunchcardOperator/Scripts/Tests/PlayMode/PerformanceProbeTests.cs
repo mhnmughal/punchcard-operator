@@ -10,7 +10,7 @@ using PunchcardOperator;
 namespace PunchcardOperator.Tests
 {
     /// <summary>Lightweight performance probe. Editor frame times are not
-    /// device-representative, but managed (GC) allocations are — a per-frame heap
+    /// device-representative, but managed (GC) allocations are - a per-frame heap
     /// allocation causes the same collection hitch on a phone. This checks the
     /// steady-state editing screen and the execute animation don't allocate every
     /// frame, and logs the numbers for the record.</summary>

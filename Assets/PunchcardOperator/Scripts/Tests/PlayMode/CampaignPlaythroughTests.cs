@@ -13,7 +13,7 @@ namespace PunchcardOperator.Tests
     /// load the scene, apply the intended edit sequence through the same CardEditSession
     /// the Tool Dock buttons use, pull the Load and Execute lever, and assert the
     /// result overlay, rating, save and unlock. This is the automated backbone of the
-    /// 13/13 manual QA pass — it exercises the player-facing flow, not the simulator.</summary>
+    /// 13/13 manual QA pass - it exercises the player-facing flow, not the simulator.</summary>
     [TestFixture]
     public class CampaignPlaythroughTests
     {

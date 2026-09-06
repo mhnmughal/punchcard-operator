@@ -147,7 +147,7 @@ namespace PunchcardOperator.EditorTools
                 float key = Mathf.Clamp01(Smooth(sd + 0.0035f, aa) - Smooth(sd + 0.009f, aa));
                 col = Vector3.Lerp(col, cardEdge, key * 0.8f);
 
-                // punch ram — amber bar descending from a gantry into hole `ram`
+                // punch ram - amber bar descending from a gantry into hole `ram`
                 float ramX = firstX + ram * gap;
                 float gantryY = ch * 0.5f + 0.055f;        // just above the card's top edge
                 float ramTop = gantryY - 0.02f;
@@ -162,7 +162,7 @@ namespace PunchcardOperator.EditorTools
                 // bright left edge of the shaft
                 float ramEdge = Smooth(SdBox(new Vector2(lx - (ramX - 0.024f), ly - ramMid), new Vector2(0.007f, ramHalf)), aa);
                 col = Vector3.Lerp(col, amberHi, ramEdge * 0.7f);
-                // press head — a chunky block at the top of the shaft
+                // press head - a chunky block at the top of the shaft
                 float headSd = SdBox(new Vector2(lx - ramX, ly - (ramTop - 0.03f)), new Vector2(0.075f, 0.045f));
                 col = Vector3.Lerp(col, Vector3.Lerp(amberHi, amber, 0.35f), Smooth(headSd, aa));
                 // dark bite in the struck hole

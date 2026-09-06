@@ -13,8 +13,8 @@ text) styled by `Theme` in `AppShell.cs`. Fonts are Unity's bundled
 | Asset | Source | Licence | Attribution | Modified |
 |-------|--------|---------|-------------|----------|
 | LiberationSans SDF (+ fallback/materials) | Unity TMP Essential Resources | SIL OFL 1.1 | Not required for embedded use | No |
-| All UI shapes / colours | Generated from `UnityEngine.UI` primitives (this project) | Project-owned | — | n/a |
-| Interaction SFX | `Sfx.cs` runtime synthesis (this project) | Project-owned | — | n/a — see AUDIO_PROVENANCE.md |
+| All UI shapes / colours | Generated from `UnityEngine.UI` primitives (this project) | Project-owned | - | n/a |
+| Interaction SFX | `Sfx.cs` runtime synthesis (this project) | Project-owned | - | n/a - see AUDIO_PROVENANCE.md |
 
 ## Packages
 

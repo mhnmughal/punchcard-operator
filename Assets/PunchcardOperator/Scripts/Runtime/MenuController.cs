@@ -164,7 +164,7 @@ namespace PunchcardOperator
 
             var certPlate = Theme.Panelled("CertPlate", _controlRoom, new Color32(0x1B, 0x2C, 0x1E, 0xFF));
             ((RectTransform)certPlate.transform).Set(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(560, 52), new Vector2(0, 20));
-            var certLabel = Theme.Label("Cert", certPlate.transform, "MASTER STATUS  —  SYSTEM CERTIFIED", Theme.H2, Theme.Good);
+            var certLabel = Theme.Label("Cert", certPlate.transform, "MASTER STATUS  -  SYSTEM CERTIFIED", Theme.H2, Theme.Good);
             Theme.Stretch((RectTransform)certLabel.transform);
             var co = certPlate.gameObject.AddComponent<Outline>(); co.effectColor = Theme.Good; co.effectDistance = new Vector2(2, 2);
             _certPlate = certPlate.gameObject;
@@ -211,7 +211,7 @@ namespace PunchcardOperator
             var db = AppState.Database;
             if (db == null)
             {
-                Theme.Label("err", body, "NO LEVEL DATABASE — run Punchcard Operator/Rebuild All Levels", Theme.H2, Theme.Bad);
+                Theme.Label("err", body, "NO LEVEL DATABASE - run Punchcard Operator/Rebuild All Levels", Theme.H2, Theme.Bad);
                 return;
             }
             Cassette(body, "TRAINING", "Operator Training", new[] { db.Tutorial });
@@ -353,19 +353,19 @@ namespace PunchcardOperator
             ManualPanel(cols, "THE MACHINE", new[]
             {
                 "A punch card holds one instruction per row. The reader runs them top to bottom.",
-                "MOVE  — the carrier steps one cell the way it faces.",
-                "LEFT / RIGHT  — the carrier turns in place.",
-                "REPEAT  — re-runs the row above it, the number of times on the dial.",
+                "MOVE  - the carrier steps one cell the way it faces.",
+                "LEFT / RIGHT  - the carrier turns in place.",
+                "REPEAT  - re-runs the row above it, the number of times on the dial.",
                 "Both machines must finish parked on their trays.",
             });
             ManualPanel(cols, "THE TOOL DOCK", new[]
             {
-                "PUNCH  — cut an instruction into an empty row.",
-                "PATCH  — re-cut a row that was punched wrong.",
-                "SHIFT  — slide a row up or down by one.",
-                "SWAP  — exchange any two rows.",
-                "FLIP  — feed the card so the reader runs it bottom to top.",
-                "COPY  — duplicate a row into an empty one.",
+                "PUNCH  - cut an instruction into an empty row.",
+                "PATCH  - re-cut a row that was punched wrong.",
+                "SHIFT  - slide a row up or down by one.",
+                "SWAP  - exchange any two rows.",
+                "FLIP  - feed the card so the reader runs it bottom to top.",
+                "COPY  - duplicate a row into an empty one.",
             });
 
             var footer = Theme.Rect("footer", _manual);

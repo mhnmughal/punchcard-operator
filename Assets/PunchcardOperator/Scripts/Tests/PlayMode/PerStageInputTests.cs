@@ -12,7 +12,7 @@ using PunchcardOperator;
 namespace PunchcardOperator.Tests
 {
     /// <summary>Per-stage hands-on-equivalent QA: for every campaign stage this drives
-    /// the Game scene through literal UI button clicks — tool buttons, card-row buttons,
+    /// the Game scene through literal UI button clicks - tool buttons, card-row buttons,
     /// op-picker buttons, the Load/Execute lever. It checks a failing run halts with a
     /// reason + RETRY, that an illegal edit is rejected with a toast and costs nothing,
     /// then solves the stage by clicking and confirms the success + PERFECT rating.</summary>
