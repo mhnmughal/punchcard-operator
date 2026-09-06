@@ -3,7 +3,8 @@
     "rootNamespace": "PunchcardOperator.EditorTools",
     "references": [
         "PunchcardOperator.Runtime",
-        "UnityEditor.Android.Extensions"
+        "UnityEditor.Android.Extensions",
+        "UnityEditor.iOS.Extensions.Xcode"
     ],
     "includePlatforms": [
         "Editor"
