@@ -98,18 +98,76 @@ namespace PunchcardOperator
 
         // ---------------------------------------------------------------- chrome
 
+        private Image _lampPower, _lampReader, _lampRun;
+        private RectTransform _punchHead;
+
+        private static void Bolts(Transform parent, float inset = 10f)
+        {
+            var corners = new[]
+            {
+                (new Vector2(0, 0), new Vector2(inset, inset)),
+                (new Vector2(0, 1), new Vector2(inset, -inset)),
+                (new Vector2(1, 0), new Vector2(-inset, inset)),
+                (new Vector2(1, 1), new Vector2(-inset, -inset)),
+            };
+            foreach (var (anchor, pos) in corners)
+            {
+                var b = Theme.Panelled("bolt", parent, new Color32(0x10, 0x12, 0x15, 0xFF));
+                ((RectTransform)b.transform).Set(anchor, anchor, new Vector2(0.5f, 0.5f), new Vector2(9, 9), pos);
+                var o = b.gameObject.AddComponent<Outline>();
+                o.effectColor = new Color32(0x3E, 0x44, 0x4E, 0xFF); o.effectDistance = new Vector2(1, 1);
+                b.raycastTarget = false;
+            }
+        }
+
+        private static void Raise(Image img, Color? edge = null)
+        {
+            var o = img.gameObject.AddComponent<Outline>();
+            o.effectColor = edge ?? new Color32(0x3A, 0x40, 0x4A, 0xFF);
+            o.effectDistance = new Vector2(2, -2);
+        }
+
+        private Image Lamp(Transform parent, string label, float xFromRight)
+        {
+            var housing = Theme.Panelled($"lamp_{label}", parent, Theme.PanelDark);
+            ((RectTransform)housing.transform).Set(new Vector2(1, 1), new Vector2(1, 1), new Vector2(1, 1), new Vector2(92, 24), new Vector2(xFromRight, -60));
+            var dot = Theme.Panelled("d", housing.transform, new Color32(0x33, 0x2A, 0x22, 0xFF));
+            ((RectTransform)dot.transform).Set(new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(11, 11), new Vector2(10, 0));
+            Theme.Label("t", housing.transform, label, 12, Theme.InkDim, TextAlignmentOptions.Left)
+                .GetComponent<RectTransform>().Set(new Vector2(0, 0), new Vector2(1, 1), new Vector2(0, 0.5f), new Vector2(-26, 0), new Vector2(26, 0));
+            housing.raycastTarget = false;
+            return dot;
+        }
+
         private void BuildChrome()
         {
             var bg = Theme.Panelled("Backplate", _root, Theme.PanelDark);
             Theme.Stretch((RectTransform)bg.transform);
+            // faint machine-panel seams
+            for (int i = 1; i < 4; i++)
+            {
+                var seam = Theme.Panelled("seam", bg.transform, new Color(0, 0, 0, 0.18f));
+                ((RectTransform)seam.transform).Set(new Vector2(i / 4f, 0), new Vector2(i / 4f, 1), new Vector2(0.5f, 0.5f), new Vector2(2, 0), Vector2.zero);
+                seam.raycastTarget = false;
+            }
 
             // Status Rail (top)
             var rail = Theme.Panelled("StatusRail", _root, Theme.Panel);
+            Raise(rail);
+            Bolts(rail.transform, 12f);
+            var accent = Theme.Panelled("railAccent", rail.transform, Theme.Amber);
+            ((RectTransform)accent.transform).Set(new Vector2(0, 0), new Vector2(1, 0), new Vector2(0.5f, 0), new Vector2(-8, 3), new Vector2(0, 0));
+            accent.raycastTarget = false;
             var rrt = (RectTransform)rail.transform;
             rrt.anchorMin = new Vector2(0, 1); rrt.anchorMax = new Vector2(1, 1);
             rrt.pivot = new Vector2(0.5f, 1f);
             rrt.sizeDelta = new Vector2(0, 132);
             rrt.anchoredPosition = Vector2.zero;
+
+            _lampPower = Lamp(rail.transform, "PWR", -314);
+            _lampReader = Lamp(rail.transform, "RDR", -214);
+            _lampRun = Lamp(rail.transform, "RUN", -114);
+            _lampPower.color = Theme.Good; // powered on
 
             var title = Theme.Label("Title", rail.transform, $"PROGRAM {_def.id}  —  {_def.displayName}", 30, Theme.Amber, TextAlignmentOptions.TopLeft);
             var trt = (RectTransform)title.transform;
@@ -118,47 +176,70 @@ namespace PunchcardOperator
 
             _objective = Theme.Label("Objective", rail.transform, _def.machineObjective, 21, Theme.Ink, TextAlignmentOptions.TopLeft);
             var ort = (RectTransform)_objective.transform;
-            ort.anchorMin = new Vector2(0, 0); ort.anchorMax = new Vector2(1, 1); ort.offsetMin = new Vector2(20, 8); ort.offsetMax = new Vector2(-220, -54);
+            ort.anchorMin = new Vector2(0, 0); ort.anchorMax = new Vector2(1, 1); ort.offsetMin = new Vector2(20, 8); ort.offsetMax = new Vector2(-430, -50);
 
-            _editCounter = Theme.Label("EditCounter", rail.transform, "", 22, Theme.InkDim, TextAlignmentOptions.TopRight);
+            _editCounter = Theme.Label("EditCounter", rail.transform, "", 20, Theme.InkDim, TextAlignmentOptions.TopRight);
             var crt = (RectTransform)_editCounter.transform;
             crt.anchorMin = new Vector2(1, 1); crt.anchorMax = new Vector2(1, 1); crt.pivot = new Vector2(1, 1);
-            crt.sizeDelta = new Vector2(200, 40); crt.anchoredPosition = new Vector2(-20, -12);
+            crt.sizeDelta = new Vector2(520, 28); crt.anchoredPosition = new Vector2(-20, -12);
 
             Theme.TextButton("BackBtn", rail.transform, "‹ VAULT", Theme.PanelLight, Theme.Ink, GoBack)
                 .GetComponent<RectTransform>().Set(new Vector2(1, 0), new Vector2(1, 0), new Vector2(1, 0), new Vector2(180, 44), new Vector2(-20, 10));
 
-            // Board area (left ~62%)
+            // Board area (left ~62%) — recessed machine housing
             _boardArea = Theme.Rect("BoardArea", _root);
             _boardArea.anchorMin = new Vector2(0, 0); _boardArea.anchorMax = new Vector2(0.62f, 1);
             _boardArea.offsetMin = new Vector2(20, 190); _boardArea.offsetMax = new Vector2(-10, -150);
             var floor = _boardArea.gameObject.AddComponent<Image>();
-            floor.color = Theme.Panel;
+            floor.color = new Color32(0x1A, 0x1E, 0x23, 0xFF);
+            Raise(floor, new Color32(0x0C, 0x0E, 0x11, 0xFF));
+            Bolts(_boardArea, 14f);
+            Theme.Label("FloorTag", _boardArea, "AUTOMATION FLOOR", 14, Theme.InkDim, TextAlignmentOptions.BottomLeft)
+                .GetComponent<RectTransform>().Set(new Vector2(0, 0), new Vector2(1, 0), new Vector2(0, 0), new Vector2(-24, 20), new Vector2(16, 8));
 
-            // Card panel (right)
+            // Card panel (right) — the card reader
             var cardPanel = Theme.Panelled("CardPanel", _root, Theme.PanelLight);
             var cprt = (RectTransform)cardPanel.transform;
             cprt.anchorMin = new Vector2(0.62f, 0); cprt.anchorMax = new Vector2(1, 1);
             cprt.offsetMin = new Vector2(10, 190); cprt.offsetMax = new Vector2(-20, -150);
-            Theme.Label("CardHdr", cardPanel.transform, "PUNCH CARD", 22, Theme.CardEdge, TextAlignmentOptions.Top)
-                .GetComponent<RectTransform>().Set(new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1), new Vector2(0, 34), new Vector2(0, -8));
+            Raise(cardPanel);
+            Bolts(cardPanel.transform, 12f);
+
+            var readerHead = Theme.Panelled("ReaderHead", cardPanel.transform, Theme.PanelDark);
+            ((RectTransform)readerHead.transform).Set(new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1), new Vector2(0, 52), new Vector2(0, 0));
+            Theme.Label("CardHdr", readerHead.transform, "CARD READER", 18, Theme.Amber, TextAlignmentOptions.Left)
+                .GetComponent<RectTransform>().Set(new Vector2(0, 0), new Vector2(1, 1), new Vector2(0, 0.5f), new Vector2(-24, 0), new Vector2(18, 0));
+            var slotMouth = Theme.Panelled("slot", readerHead.transform, new Color32(0x0C, 0x0E, 0x11, 0xFF));
+            ((RectTransform)slotMouth.transform).Set(new Vector2(0, 0), new Vector2(1, 0), new Vector2(0.5f, 0), new Vector2(-24, 6), new Vector2(0, 0));
+
+            // punch-head assembly — drops onto a row when you punch
+            _punchHead = Theme.Rect("PunchHead", cardPanel.transform);
+            _punchHead.Set(new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(46, 120), new Vector2(0, 40));
+            var phBar = _punchHead.gameObject.AddComponent<Image>(); phBar.color = Theme.Amber; phBar.raycastTarget = false;
+            var phTip = Theme.Panelled("tip", _punchHead, Theme.PanelDark);
+            ((RectTransform)phTip.transform).Set(new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 1), new Vector2(20, 16), new Vector2(0, 0));
+            _punchHead.gameObject.SetActive(false);
 
             _cardList = Theme.Rect("CardList", cardPanel.transform);
             _cardList.anchorMin = new Vector2(0, 0); _cardList.anchorMax = new Vector2(1, 1);
-            _cardList.offsetMin = new Vector2(14, 14); _cardList.offsetMax = new Vector2(-14, -46);
+            _cardList.offsetMin = new Vector2(14, 14); _cardList.offsetMax = new Vector2(-14, -64);
             var vlg = _cardList.gameObject.AddComponent<VerticalLayoutGroup>();
             vlg.spacing = 6; vlg.childControlHeight = true; vlg.childControlWidth = true;
             vlg.childForceExpandHeight = true; vlg.childForceExpandWidth = true;
 
-            // Tool Dock (bottom)
+            // Tool Dock (bottom) — physical dock
             var dock = Theme.Panelled("ToolDock", _root, Theme.Panel);
+            Raise(dock);
+            Bolts(dock.transform, 12f);
             var drt = (RectTransform)dock.transform;
             drt.anchorMin = new Vector2(0, 0); drt.anchorMax = new Vector2(1, 0); drt.pivot = new Vector2(0.5f, 0);
             drt.sizeDelta = new Vector2(0, 168); drt.anchoredPosition = Vector2.zero;
+            Theme.Label("DockTag", dock.transform, "TOOL DOCK", 13, Theme.InkDim, TextAlignmentOptions.TopLeft)
+                .GetComponent<RectTransform>().Set(new Vector2(0, 1), new Vector2(0, 1), new Vector2(0, 1), new Vector2(160, 20), new Vector2(20, -2));
 
             _toolRow = Theme.Rect("ToolRow", dock.transform);
             _toolRow.anchorMin = new Vector2(0, 0); _toolRow.anchorMax = new Vector2(0.66f, 1);
-            _toolRow.offsetMin = new Vector2(20, 16); _toolRow.offsetMax = new Vector2(-10, -16);
+            _toolRow.offsetMin = new Vector2(20, 16); _toolRow.offsetMax = new Vector2(-10, -22);
             var hlg = _toolRow.gameObject.AddComponent<HorizontalLayoutGroup>();
             hlg.spacing = 10; hlg.childControlWidth = true; hlg.childControlHeight = true;
             hlg.childForceExpandWidth = true; hlg.childForceExpandHeight = true;
@@ -166,6 +247,9 @@ namespace PunchcardOperator
             _leverBtn = Theme.TextButton("Lever", dock.transform, "LOAD CARD", Theme.Amber, Theme.PanelDark, OnLever);
             ((RectTransform)_leverBtn.transform).Set(new Vector2(0.66f, 0), new Vector2(1, 1), new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
             Theme.Stretch((RectTransform)_leverBtn.transform, 14);
+            var knob = Theme.Panelled("knob", _leverBtn.transform, Theme.PanelDark);
+            ((RectTransform)knob.transform).Set(new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(40, 14), new Vector2(0, 6));
+            knob.raycastTarget = false;
             _leverLabel = _leverBtn.GetComponentInChildren<TextMeshProUGUI>();
 
             // toast + coach
@@ -182,11 +266,11 @@ namespace PunchcardOperator
 
             _coachRing = Theme.Rect("CoachRing", _root);
             var ringImg = _coachRing.gameObject.AddComponent<Image>();
-            ringImg.color = new Color(Theme.Amber.r, Theme.Amber.g, Theme.Amber.b, 0.10f);
+            ringImg.color = new Color(Theme.Amber.r, Theme.Amber.g, Theme.Amber.b, 0.04f);
             ringImg.raycastTarget = false;
             var ringOutline = _coachRing.gameObject.AddComponent<Outline>();
             ringOutline.effectColor = Theme.Amber;
-            ringOutline.effectDistance = new Vector2(4, 4);
+            ringOutline.effectDistance = new Vector2(5, 5);
             _coachRing.gameObject.SetActive(false);
         }
 
@@ -353,8 +437,9 @@ namespace PunchcardOperator
                 if (row.locked) baseC = Color.Lerp(baseC, Theme.PanelLight, 0.35f);
                 w.background.color = sel ? Color.Lerp(baseC, Theme.Good, 0.5f) : baseC;
             }
-            _editCounter.text = $"EDITS {_session.EditCount}" +
-                (_def.isTutorial ? "" : $"   PERFECT {_def.perfectEditTarget}   COMPACT {_def.compactEditTarget}");
+            _editCounter.text = _def.isTutorial
+                ? $"EDITS {_session.EditCount}"
+                : $"EDITS {_session.EditCount}      PERFECT {_def.perfectEditTarget}   COMPACT {_def.compactEditTarget}";
         }
 
         private static string OpText(CardRow r)
@@ -476,7 +561,7 @@ namespace PunchcardOperator
                     if (ok)
                     {
                         Sfx.Play(_tool == CardTool.Punch ? "punch" : "patch");
-                        Sfx.Play("chad", 1.4f);
+                        StartCoroutine(PunchHeadDrop(idx));
                         if (_def.isTutorial && _tool == CardTool.Punch) { _tutorialPunchDone = true; TryAdvanceCoachByKeyword("PUNCH MOVE"); }
                     }
                     else { Sfx.Play("error"); Toast(err); }
@@ -497,7 +582,7 @@ namespace PunchcardOperator
                     bool ok; string err;
                     if (_tool == CardTool.Punch) ok = _session.Punch(idx, CardOp.Repeat, rr, out err);
                     else ok = _session.Patch(idx, CardOp.Repeat, rr, out err);
-                    if (ok) { Sfx.Play(_tool == CardTool.Punch ? "punch" : "patch"); }
+                    if (ok) { Sfx.Play(_tool == CardTool.Punch ? "punch" : "patch"); StartCoroutine(PunchHeadDrop(idx)); }
                     else { Sfx.Play("error"); Toast(err); }
                     Destroy(_opPicker.gameObject); _opPicker = null;
                     AfterEdit();
@@ -505,6 +590,30 @@ namespace PunchcardOperator
             }
             Theme.TextButton("CANCEL", panel.transform, "CANCEL", Theme.Bad, Theme.Ink, () => { Destroy(_opPicker.gameObject); _opPicker = null; })
                 .GetComponent<RectTransform>().Set(new Vector2(0, 0), new Vector2(1, 0), new Vector2(0.5f, 0), new Vector2(-40, 40), new Vector2(0, 12));
+        }
+
+        private IEnumerator PunchHeadDrop(int rowIndex)
+        {
+            if (_punchHead == null || rowIndex < 0 || rowIndex >= _rowWidgets.Count) yield break;
+            var cardPanel = (RectTransform)_punchHead.parent;
+            var rowRt = (RectTransform)_rowWidgets[rowIndex].background.transform;
+
+            Vector2 RowLocalTop()
+            {
+                var world = rowRt.TransformPoint(new Vector3(0, rowRt.rect.height * 0.5f, 0));
+                var screen = RectTransformUtility.WorldToScreenPoint(null, world);
+                RectTransformUtility.ScreenPointToLocalPointInRectangle(cardPanel, screen, null, out var local);
+                return local;
+            }
+            var target = RowLocalTop();
+            _punchHead.gameObject.SetActive(true);
+            _punchHead.anchoredPosition = new Vector2(target.x, target.y + 130);
+            yield return Tween(0.09f, t => _punchHead.anchoredPosition = new Vector2(target.x, Mathf.Lerp(target.y + 130, target.y + 8, t)));
+            Sfx.Play("chad", 1.4f);
+            _rowWidgets[rowIndex].hole.color = Theme.Amber;
+            yield return Tween(0.16f, t => _punchHead.anchoredPosition = new Vector2(target.x, Mathf.Lerp(target.y + 8, target.y + 130, t)));
+            _punchHead.gameObject.SetActive(false);
+            RefreshCardVisuals();
         }
 
         private void AfterEdit()
@@ -522,8 +631,12 @@ namespace PunchcardOperator
 
         // ---------------------------------------------------------------- lever / execute
 
+        private static readonly Color LampOff = new Color32(0x33, 0x2A, 0x22, 0xFF);
+
         private void RefreshLever()
         {
+            if (_lampReader != null) _lampReader.color = _loaded ? Theme.Good : LampOff;
+            if (_lampRun != null) _lampRun.color = _phase == Phase.Executing ? Theme.Amber : LampOff;
             if (_phase == Phase.Executing) { _leverBtn.interactable = false; return; }
             _leverBtn.interactable = true;
             _leverLabel.text = _loaded ? "EXECUTE" : "LOAD CARD";
@@ -594,6 +707,7 @@ namespace PunchcardOperator
             }
 
             ClearRowHighlights();
+            if (_lampRun != null) _lampRun.color = LampOff;
             yield return new WaitForSecondsRealtime(0.25f);
             ShowResult(result);
         }
