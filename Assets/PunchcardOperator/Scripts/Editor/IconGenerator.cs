@@ -5,41 +5,38 @@ using UnityEngine;
 namespace PunchcardOperator.EditorTools
 {
     /// <summary>Generates the Punchcard Operator app icon procedurally (original art,
-    /// nothing imported): one bold cream punch card tilted on a dark stage, a clean
-    /// row of four square holes, the active instruction hole lit amber with a bloom.
-    /// High contrast, no fine detail, reads at 48px. Rendered 4x-supersampled.
+    /// nothing imported, no AI image generation): a single glowing punch-card slot
+    /// inside a rounded frame, on a dark stage. High contrast, no fine detail, reads
+    /// at 20px. Fills the legacy icon, Android Adaptive layers, and the full iOS icon
+    /// set (Application, Settings, Notifications, Spotlight, Marketing).
     /// Menu: Punchcard Operator/Regenerate Game Icon.</summary>
     public static class IconGenerator
     {
         private const string IconPath = "Assets/PunchcardOperator/Art/Icon_1024.png";
+        private const string AdaptiveBgPath = "Assets/PunchcardOperator/Art/Icon_Adaptive_Background.png";
+        private const string AdaptiveFgPath = "Assets/PunchcardOperator/Art/Icon_Adaptive_Foreground.png";
+        private const string IosDir = "Assets/PunchcardOperator/Art/iOS";
         private const int Size = 1024;
         private const int SS = 4;
+        private const int AdaptiveSize = 432;
+        private const float FgSafeZoneScale = 0.78f; // keeps the glyph clear of Android's adaptive mask crop
+
+        private static readonly Vector3 BgCentre = new Vector3(0.09f, 0.10f, 0.14f);
+        private static readonly Vector3 BgEdge   = new Vector3(0.02f, 0.03f, 0.05f);
+        private static readonly Vector3 Amber    = new Vector3(1.00f, 0.66f, 0.16f);
+        private static readonly Vector3 AmberHi  = new Vector3(1.00f, 0.92f, 0.60f);
+        private static readonly Vector3 Frame    = new Vector3(0.55f, 0.58f, 0.66f);
+
+        private const float OuterHalf = 0.30f, OuterCorner = 0.09f;
+        private const float RingInner = 0.010f, RingOuter = 0.026f;
+        private const float SlotHalfW = 0.085f, SlotHalfH = 0.20f, SlotCorner = 0.03f;
 
         [MenuItem("Punchcard Operator/Regenerate Game Icon")]
         public static void Generate()
         {
+            Directory.CreateDirectory("Assets/PunchcardOperator/Art");
+
             var acc = new Color[Size * Size];
-
-            var bgCentre = new Vector3(0.17f, 0.20f, 0.25f);
-            var bgEdge   = new Vector3(0.030f, 0.035f, 0.046f);
-            var cardHi   = new Vector3(0.98f, 0.93f, 0.78f);
-            var cardLo   = new Vector3(0.80f, 0.71f, 0.51f);
-            var cardKey  = new Vector3(0.14f, 0.10f, 0.06f);
-            var hole     = new Vector3(0.050f, 0.052f, 0.064f);
-            var amber    = new Vector3(1.00f, 0.66f, 0.16f);
-            var amberHi  = new Vector3(1.00f, 0.88f, 0.52f);
-
-            const float ang = -6f * Mathf.Deg2Rad;
-            float cs = Mathf.Cos(-ang), sn = Mathf.Sin(-ang);
-            const float cw = 0.66f, chh = 0.44f, corner = 0.045f;
-            const int holes = 4;
-            const float holeW = 0.072f, holeH = 0.135f, rowY = 0.0f;
-            const float firstX = -cw * 0.5f + 0.13f;
-            const float gap = (cw - 0.26f) / (holes - 1);
-            const int lit = 2; // the active instruction
-
-            float litX = firstX + lit * gap;
-
             for (int py = 0; py < Size; py++)
             for (int px = 0; px < Size; px++)
             {
@@ -49,7 +46,7 @@ namespace PunchcardOperator.EditorTools
                 {
                     float u = (px + (sx + 0.5f) / SS) / Size - 0.5f;
                     float v = 0.5f - (py + (sy + 0.5f) / SS) / Size;
-                    sum += Sample(u, v);
+                    sum += SampleFlat(u, v);
                 }
                 sum /= (SS * SS);
                 acc[(Size - 1 - py) * Size + px] = new Color(sum.x, sum.y, sum.z, 1f);
@@ -58,8 +55,6 @@ namespace PunchcardOperator.EditorTools
             var tex = new Texture2D(Size, Size, TextureFormat.RGBA32, false);
             tex.SetPixels(acc);
             tex.Apply();
-
-            Directory.CreateDirectory("Assets/PunchcardOperator/Art");
             File.WriteAllBytes(IconPath, tex.EncodeToPNG());
             Object.DestroyImmediate(tex);
             AssetDatabase.ImportAsset(IconPath);
@@ -70,6 +65,7 @@ namespace PunchcardOperator.EditorTools
             importer.alphaIsTransparency = false;
             importer.npotScale = TextureImporterNPOTScale.None;
             importer.maxTextureSize = 1024;
+            importer.textureCompression = TextureImporterCompression.Uncompressed;
             importer.SaveAndReimport();
 
             var icon = AssetDatabase.LoadAssetAtPath<Texture2D>(IconPath);
@@ -80,63 +76,181 @@ namespace PunchcardOperator.EditorTools
             AssetDatabase.SaveAssets();
             Debug.Log("[Punchcard] Icon regenerated (4x SS) and assigned: " + IconPath);
 
-            Vector3 Sample(float u, float v)
+            GenerateAdaptive();
+            GenerateIos();
+        }
+
+        /// <summary>Same flat combined art as the legacy icon: opaque, background baked
+        /// in, no separate layers. Used directly for iOS, which has no adaptive concept.</summary>
+        private static Vector3 SampleFlat(float u, float v)
+        {
+            float aa = 1.6f / Size;
+
+            float r = Mathf.Sqrt(u * u + v * v) / 0.62f;
+            Vector3 col = Vector3.Lerp(BgCentre, BgEdge, Mathf.Clamp01(r * r));
+
+            float bloom = Mathf.Exp(-(u * u + v * v) / 0.05f);
+            col += Amber * bloom * 0.25f;
+
+            float outerSd = SdRound(new Vector2(u, v), new Vector2(OuterHalf, OuterHalf), OuterCorner);
+            float ring = Mathf.Clamp01(Smooth(outerSd + RingInner, aa) - Smooth(outerSd + RingOuter, aa));
+            col = Vector3.Lerp(col, Frame, ring * 0.9f);
+
+            float slotSd = SdRound(new Vector2(u, v), new Vector2(SlotHalfW, SlotHalfH), SlotCorner);
+            float slotMask = Smooth(slotSd, aa);
+            Vector3 slotCol = Vector3.Lerp(Amber, AmberHi, Mathf.Exp(-(v * v) / 0.05f));
+            col = Vector3.Lerp(col, slotCol, slotMask);
+
+            float innerGlow = Mathf.Exp(-(u * u + v * v) / 0.02f) * (1f - slotMask);
+            col += AmberHi * innerGlow * 0.5f;
+
+            return new Vector3(Mathf.Clamp01(col.x), Mathf.Clamp01(col.y), Mathf.Clamp01(col.z));
+        }
+
+        /// <summary>Android Adaptive icon: same visual language as the legacy icon, split
+        /// into an opaque background layer (the dark stage plus ambient bloom) and a
+        /// transparent foreground layer (the frame and glowing slot), the foreground
+        /// scaled inside Android's mask safe zone so it survives circle/squircle/
+        /// rounded-square cropping on any launcher.</summary>
+        private static void GenerateAdaptive()
+        {
+            var bgPixels = new Color[AdaptiveSize * AdaptiveSize];
+            var fgPixels = new Color[AdaptiveSize * AdaptiveSize];
+
+            for (int py = 0; py < AdaptiveSize; py++)
+            for (int px = 0; px < AdaptiveSize; px++)
             {
-                float aa = 1.6f / Size;
-
-                // stage
-                float r = Mathf.Sqrt(u * u + v * v) / 0.70f;
-                Vector3 col = Vector3.Lerp(bgCentre, bgEdge, Mathf.Clamp01(r * r));
-
-                // card-local
-                float lx = u * cs - v * sn;
-                float ly = u * sn + v * cs;
-
-                // amber bloom from the lit hole, bleeding onto the stage
-                float bloom = Mathf.Exp(-(new Vector2(lx - litX, ly - rowY).sqrMagnitude) / 0.020f);
-                col += amber * bloom * 0.28f;
-
-                float sd = SdRound(new Vector2(lx, ly), new Vector2(cw * 0.5f, chh * 0.5f), corner);
-                float cardMask = Smooth(sd, aa);
-
-                // drop shadow
-                float shSd = SdRound(new Vector2(lx - 0.03f, ly + 0.032f), new Vector2(cw * 0.5f, chh * 0.5f), corner);
-                col = Vector3.Lerp(col, new Vector3(0.010f, 0.012f, 0.018f), Smooth(shSd, 0.055f) * 0.6f * (1f - cardMask));
-
-                if (cardMask > 0.001f)
+                Vector3 bgSum = Vector3.zero;
+                Vector3 fgSum = Vector3.zero;
+                float fgAlphaSum = 0f;
+                for (int sy = 0; sy < SS; sy++)
+                for (int sx = 0; sx < SS; sx++)
                 {
-                    float shade = Mathf.Clamp01(Mathf.InverseLerp(-chh * 0.5f, chh * 0.55f, ly));
-                    Vector3 face = Vector3.Lerp(cardLo, cardHi, 1f - shade * 0.9f);
+                    float u = (px + (sx + 0.5f) / SS) / AdaptiveSize - 0.5f;
+                    float v = 0.5f - (py + (sy + 0.5f) / SS) / AdaptiveSize;
 
-                    float holeMask = 0f, litMask = 0f;
-                    for (int h = 0; h < holes; h++)
-                    {
-                        float hx = firstX + h * gap;
-                        float hSd = SdRound(new Vector2(lx - hx, ly - rowY), new Vector2(holeW * 0.5f, holeH * 0.5f), 0.012f);
-                        float m = Smooth(hSd, aa);
-                        holeMask = Mathf.Max(holeMask, m);
-                        if (h == lit) litMask = m;
-                    }
+                    float r = Mathf.Sqrt(u * u + v * v) / 0.62f;
+                    bgSum += Vector3.Lerp(BgCentre, BgEdge, Mathf.Clamp01(r * r));
 
-                    Vector3 cardCol = Vector3.Lerp(face, hole, holeMask);
-                    // lit hole: amber fill + inner glow
-                    Vector3 litCol = Vector3.Lerp(amber, amberHi,
-                        Mathf.Exp(-(new Vector2(lx - litX, ly - rowY).sqrMagnitude) / 0.0032f));
-                    cardCol = Vector3.Lerp(cardCol, litCol, litMask);
+                    float su = u / FgSafeZoneScale, sv = v / FgSafeZoneScale;
+                    float aa = 1.6f / AdaptiveSize * FgSafeZoneScale;
 
-                    // top rim light
-                    float rim = Smooth(-(sd + 0.003f), aa) * Smooth(sd + 0.013f, aa);
-                    cardCol += amberHi * rim * 0.30f * Mathf.Clamp01(1.3f - shade * 2f);
+                    float bloom = Mathf.Exp(-(su * su + sv * sv) / 0.05f);
+                    float outerSd = SdRound(new Vector2(su, sv), new Vector2(OuterHalf, OuterHalf), OuterCorner);
+                    float ring = Mathf.Clamp01(Smooth(outerSd + RingInner, aa) - Smooth(outerSd + RingOuter, aa));
 
-                    col = Vector3.Lerp(col, cardCol, cardMask);
+                    float slotSd = SdRound(new Vector2(su, sv), new Vector2(SlotHalfW, SlotHalfH), SlotCorner);
+                    float slotMask = Smooth(slotSd, aa);
+                    Vector3 slotCol = Vector3.Lerp(Amber, AmberHi, Mathf.Exp(-(sv * sv) / 0.05f));
+
+                    Vector3 fgCol = Vector3.Lerp(Frame * ring, slotCol, slotMask);
+                    float innerGlow = Mathf.Exp(-(su * su + sv * sv) / 0.02f) * (1f - slotMask);
+                    fgCol += AmberHi * innerGlow * 0.5f;
+
+                    fgSum += fgCol;
+                    fgAlphaSum += Mathf.Max(Mathf.Max(ring, slotMask), Mathf.Max(bloom * 0.4f, innerGlow));
                 }
-
-                // dark keyline
-                float key = Mathf.Clamp01(Smooth(sd + 0.003f, aa) - Smooth(sd + 0.009f, aa));
-                col = Vector3.Lerp(col, cardKey, key * 0.9f);
-
-                return new Vector3(Mathf.Clamp01(col.x), Mathf.Clamp01(col.y), Mathf.Clamp01(col.z));
+                int n = SS * SS;
+                bgPixels[(AdaptiveSize - 1 - py) * AdaptiveSize + px] = new Color(bgSum.x / n, bgSum.y / n, bgSum.z / n, 1f);
+                Vector3 fgAvg = fgSum / n;
+                fgPixels[(AdaptiveSize - 1 - py) * AdaptiveSize + px] =
+                    new Color(Mathf.Clamp01(fgAvg.x), Mathf.Clamp01(fgAvg.y), Mathf.Clamp01(fgAvg.z), Mathf.Clamp01(fgAlphaSum / n));
             }
+
+            var bgTex = WritePng(AdaptiveBgPath, AdaptiveSize, bgPixels, false);
+            var fgTex = WritePng(AdaptiveFgPath, AdaptiveSize, fgPixels, true);
+
+            var akind = System.Type.GetType("UnityEditor.Android.AndroidPlatformIconKind, UnityEditor.Android.Extensions");
+            var adaptiveKind = (PlatformIconKind)akind.GetField("Adaptive").GetValue(null);
+            var icons = PlayerSettings.GetPlatformIcons(BuildTargetGroup.Android, adaptiveKind);
+            icons[0].SetTextures(new[] { bgTex, fgTex });
+            PlayerSettings.SetPlatformIcons(BuildTargetGroup.Android, adaptiveKind, icons);
+            AssetDatabase.SaveAssets();
+            Debug.Log("[Punchcard] Android Adaptive icon layers generated and assigned.");
+        }
+
+        /// <summary>iOS has no adaptive concept, every slot is a flat pre-rendered square
+        /// at a fixed pixel size. Renders the same flat art at every unique size Apple
+        /// requires across Application, Settings, Notifications, Spotlight and Marketing,
+        /// then fills every slot Unity's iOS Player Settings expose.</summary>
+        private static void GenerateIos()
+        {
+            Directory.CreateDirectory(IosDir);
+            var kindType = System.Type.GetType("UnityEditor.iOS.iOSPlatformIconKind, UnityEditor.Apple.Extensions.Common");
+            var kindNames = new[] { "Application", "Settings", "Notification", "Spotlight", "Marketing" };
+            var cache = new System.Collections.Generic.Dictionary<int, Texture2D>();
+
+            foreach (var kn in kindNames)
+            {
+                var kind = (PlatformIconKind)kindType.GetField(kn).GetValue(null);
+                var icons = PlayerSettings.GetPlatformIcons(BuildTargetGroup.iOS, kind);
+                for (int i = 0; i < icons.Length; i++)
+                {
+                    int size = icons[i].width; // iOS icons are always square
+                    if (!cache.TryGetValue(size, out var tex))
+                    {
+                        tex = RenderFlatAt(size);
+                        var path = IosDir + "/Icon_" + size + ".png";
+                        var written = WritePng(path, size, tex, false);
+                        Object.DestroyImmediate(tex);
+                        tex = written;
+                        cache[size] = tex;
+                    }
+                    icons[i].SetTextures(new[] { tex });
+                }
+                PlayerSettings.SetPlatformIcons(BuildTargetGroup.iOS, kind, icons);
+            }
+            AssetDatabase.SaveAssets();
+            Debug.Log("[Punchcard] iOS icon set generated (" + cache.Count + " unique sizes) and assigned across Application, Settings, Notifications, Spotlight, Marketing.");
+        }
+
+        private static Texture2D RenderFlatAt(int size)
+        {
+            var pixels = new Color[size * size];
+            for (int py = 0; py < size; py++)
+            for (int px = 0; px < size; px++)
+            {
+                Vector3 sum = Vector3.zero;
+                for (int sy = 0; sy < SS; sy++)
+                for (int sx = 0; sx < SS; sx++)
+                {
+                    float u = (px + (sx + 0.5f) / SS) / size - 0.5f;
+                    float v = 0.5f - (py + (sy + 0.5f) / SS) / size;
+                    sum += SampleFlat(u, v);
+                }
+                sum /= (SS * SS);
+                pixels[(size - 1 - py) * size + px] = new Color(sum.x, sum.y, sum.z, 1f);
+            }
+            var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            tex.SetPixels(pixels);
+            tex.Apply();
+            return tex;
+        }
+
+        private static Texture2D WritePng(string path, int size, Color[] pixels, bool alpha)
+        {
+            var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            tex.SetPixels(pixels);
+            tex.Apply();
+            var written = WritePng(path, size, tex, alpha);
+            Object.DestroyImmediate(tex);
+            return written;
+        }
+
+        private static Texture2D WritePng(string path, int size, Texture2D source, bool alpha)
+        {
+            File.WriteAllBytes(path, source.EncodeToPNG());
+            AssetDatabase.ImportAsset(path);
+
+            var importer = (TextureImporter)AssetImporter.GetAtPath(path);
+            importer.textureType = TextureImporterType.Default;
+            importer.mipmapEnabled = false;
+            importer.alphaIsTransparency = alpha;
+            importer.npotScale = TextureImporterNPOTScale.None;
+            importer.maxTextureSize = Mathf.Max(size, 32);
+            importer.textureCompression = TextureImporterCompression.Uncompressed;
+            importer.SaveAndReimport();
+            return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
         }
 
         private static float SdBox(Vector2 p, Vector2 b)
